@@ -1,0 +1,16 @@
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\WinFormsLogger.exe
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\WinFormsLogger.deps.json
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\WinFormsLogger.runtimeconfig.json
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\WinFormsLogger.dll
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\WinFormsLogger.pdb
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.Form1.resources
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.csproj.GenerateResource.cache
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.GeneratedMSBuildEditorConfig.editorconfig
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.AssemblyInfoInputs.cache
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.AssemblyInfo.cs
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.csproj.CoreCompileInputs.cache
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.dll
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\refint\WinFormsLogger.dll
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.pdb
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.genruntimeconfig.cache
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\ref\WinFormsLogger.dll
