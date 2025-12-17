@@ -1,12 +1,91 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\Workspace\\Programing\\C#\\WinFormsLogger\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{686903A7-2A1F-6733-E4B5-60F48AB94CA1}|WinFormsLogger\\WinFormsLogger.csproj|d:\\workspace\\programing\\c#\\winformslogger\\winformslogger\\databasemsq.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{686903A7-2A1F-6733-E4B5-60F48AB94CA1}|WinFormsLogger\\WinFormsLogger.csproj|solutionrelative:winformslogger\\databasemsq.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{686903A7-2A1F-6733-E4B5-60F48AB94CA1}|WinFormsLogger\\WinFormsLogger.csproj|d:\\workspace\\programing\\c#\\winformslogger\\winformslogger\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{686903A7-2A1F-6733-E4B5-60F48AB94CA1}|WinFormsLogger\\WinFormsLogger.csproj|solutionrelative:winformslogger\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{686903A7-2A1F-6733-E4B5-60F48AB94CA1}|WinFormsLogger\\WinFormsLogger.csproj|d:\\workspace\\programing\\c#\\winformslogger\\winformslogger\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{686903A7-2A1F-6733-E4B5-60F48AB94CA1}|WinFormsLogger\\WinFormsLogger.csproj|solutionrelative:winformslogger\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{686903A7-2A1F-6733-E4B5-60F48AB94CA1}|WinFormsLogger\\WinFormsLogger.csproj|D:\\Workspace\\Programing\\C#\\WinFormsLogger\\winformslogger\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{686903A7-2A1F-6733-E4B5-60F48AB94CA1}|WinFormsLogger\\WinFormsLogger.csproj|solutionrelative:winformslogger\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": []
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Form1.cs",
+              "DocumentMoniker": "D:\\Workspace\\Programing\\C#\\WinFormsLogger\\WinFormsLogger\\Form1.cs",
+              "RelativeDocumentMoniker": "WinFormsLogger\\Form1.cs",
+              "ToolTip": "D:\\Workspace\\Programing\\C#\\WinFormsLogger\\WinFormsLogger\\Form1.cs",
+              "RelativeToolTip": "WinFormsLogger\\Form1.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-17T15:37:37.421Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "DataBaseMSQ.cs",
+              "DocumentMoniker": "D:\\Workspace\\Programing\\C#\\WinFormsLogger\\WinFormsLogger\\DataBaseMSQ.cs",
+              "RelativeDocumentMoniker": "WinFormsLogger\\DataBaseMSQ.cs",
+              "ToolTip": "D:\\Workspace\\Programing\\C#\\WinFormsLogger\\WinFormsLogger\\DataBaseMSQ.cs*",
+              "RelativeToolTip": "WinFormsLogger\\DataBaseMSQ.cs*",
+              "ViewState": "AgIAAA0AAAAAAAAAAAAlwB0AAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-14T19:03:03.652Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Workspace\\Programing\\C#\\WinFormsLogger\\WinFormsLogger\\Program.cs",
+              "RelativeDocumentMoniker": "WinFormsLogger\\Program.cs",
+              "ToolTip": "D:\\Workspace\\Programing\\C#\\WinFormsLogger\\WinFormsLogger\\Program.cs",
+              "RelativeToolTip": "WinFormsLogger\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T20:09:09.546Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Form1.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "DocumentMoniker": "D:\\Workspace\\Programing\\C#\\WinFormsLogger\\WinFormsLogger\\Form1.cs",
+              "RelativeDocumentMoniker": "WinFormsLogger\\Form1.cs",
+              "ToolTip": "D:\\Workspace\\Programing\\C#\\WinFormsLogger\\WinFormsLogger\\Form1.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "RelativeToolTip": "WinFormsLogger\\Form1.cs [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-13T20:08:44.547Z",
+              "EditorCaption": " [\u041A\u043E\u043D\u0441\u0442\u0440\u0443\u043A\u0442\u043E\u0440]"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
