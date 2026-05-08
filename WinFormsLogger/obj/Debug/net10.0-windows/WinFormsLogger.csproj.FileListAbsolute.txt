@@ -4,16 +4,8 @@ D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windo
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\WinFormsLogger.dll
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\WinFormsLogger.pdb
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Data.Sqlite.dll
-D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.EntityFrameworkCore.dll
-D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.EntityFrameworkCore.Abstractions.dll
-D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.EntityFrameworkCore.Relational.dll
-D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.EntityFrameworkCore.Sqlite.dll
-D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Caching.Abstractions.dll
-D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Caching.Memory.dll
-D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Configuration.Abstractions.dll
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.DependencyInjection.dll
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.DependencyInjection.Abstractions.dll
-D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.DependencyModel.dll
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Logging.dll
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Logging.Abstractions.dll
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Options.dll
@@ -57,3 +49,9 @@ D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windo
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.pdb
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\WinFormsLogger.genruntimeconfig.cache
 D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\obj\Debug\net10.0-windows\ref\WinFormsLogger.dll
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Configuration.dll
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Configuration.Abstractions.dll
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Configuration.Binder.dll
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Logging.Configuration.dll
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Logging.Console.dll
+D:\Workspace\Programing\C#\WinFormsLogger\WinFormsLogger\bin\Debug\net10.0-windows\Microsoft.Extensions.Options.ConfigurationExtensions.dll

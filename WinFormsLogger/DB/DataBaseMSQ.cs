@@ -5,6 +5,7 @@ namespace WinFormsLogger;
 internal class DataBaseMSQ : IDisposable
 {
     public SqliteConnection SqConn { get; private set; }
+
     public DataBaseMSQ()
     {
         CreateConnection();
@@ -15,10 +16,8 @@ internal class DataBaseMSQ : IDisposable
 
     private static string GetDbPath()
     {
-        string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Logger");
-        if (!Directory.Exists(appDataPath))
-            Directory.CreateDirectory(appDataPath);
-        return Path.Combine(appDataPath, "logger.db");
+        string appPath = LoggerUtils.GetAppPath();
+        return Path.Combine(appPath, "logger.db");
     }
 
     private void CreateConnection()

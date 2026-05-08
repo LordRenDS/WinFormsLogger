@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WinFormsLogger")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+844587bdab76c7c34209fd746bca241c67dac304")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b3fe5db50d9d625746384a821d7d1e67a84d88e1")]
 [assembly: System.Reflection.AssemblyProductAttribute("WinFormsLogger")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WinFormsLogger")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
