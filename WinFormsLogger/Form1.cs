@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using WinFormsLogger.DB.Models;
 using WinFormsLogger.DB.Tables;
 
@@ -15,7 +15,8 @@ public partial class Form1 : Form
     });
     private ILogger<Form> logger;
     private ProcessesT processes;
-    private Dictionary<string, DateTimeOffset> trackedProcesses = new();
+    //private Dictionary<string, DateTimeOffset> trackedProcesses = new();
+    private Dictionary<DateTimeOffset, string> trackedProcesses = new();
     private DataBaseMSQ db;
 
     public Form1()
@@ -45,9 +46,9 @@ public partial class Form1 : Form
         try
         {
             Process activeProcess = ProcessTracer.GetActiveProcess();
-            string processKey = $"{activeProcess.ProcessName}|{activeProcess.WindowsName}";
+            DateTimeOffset processKey = activeProcess.ProcessStart;
 
-            if (trackedProcesses.ContainsKey(processKey))
+            if (trackedProcesses.ContainsKey(activeProcess.ProcessStart))
             {
                 logger.Log(LogLevel.Debug, $"Активний процес (існуючий): {activeProcess.ProcessName}");
                 return;
@@ -55,7 +56,7 @@ public partial class Form1 : Form
 
             // Новий процес - зберегти в БД
             processes.CreateProcesses(activeProcess);
-            trackedProcesses[processKey] = activeProcess.ProcessStart;
+            trackedProcesses[processKey] = $"{activeProcess.ProcessName}|{activeProcess.WindowsName}";
 
             logger.Log(LogLevel.Information, $"Новий процес добавлений: {activeProcess.ProcessName}");
             RefreshDataGridView();
@@ -69,10 +70,10 @@ public partial class Form1 : Form
     private void LoadTrackedProcessesForToday()
     {
         trackedProcesses.Clear();
-        var allProcesses = processes.GetProcessesByDate(DateOnly.FromDateTime(DateTime.Now));
+        List<Process> allProcesses = processes.GetProcessesByDate(DateOnly.FromDateTime(DateTime.Now));
 
         foreach (var process in allProcesses)
-            trackedProcesses.Add($"{process.ProcessName}|{process.WindowsName}", process.ProcessStart);
+            trackedProcesses.Add(process.ProcessStart, $"{process.ProcessName}|{process.WindowsName}");
 
         logger.Log(LogLevel.Information, $"Завантажено {trackedProcesses.Count} відстежених процесів за сьогодні");
     }

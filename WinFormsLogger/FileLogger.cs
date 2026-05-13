@@ -4,8 +4,9 @@ namespace WinFormsLogger;
 
 public class FileLoggerConfiguration
 {
-    public string FilePath { get; set; } = Path.Combine(LoggerUtils.GetAppPath(), "log.txt");
+    public string FilePath { get; set; } = Path.Combine(LoggerUtils.GetAppPath(), $"log_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
     public LogLevel MinLogLevel { get; set; } = LogLevel.Information;
+    public long MaxFileSize { get; set; } = 1024*1024*2;
 }
 
 public class FileLogger : ILogger
@@ -51,6 +52,14 @@ public class FileLogger : ILogger
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
 
+                FileInfo fileInfo = new FileInfo(_config.FilePath);
+                if (fileInfo.Exists && fileInfo.Length + message.Length > _config.MaxFileSize)
+                {
+                    RotateLogFile();
+                    WriteToFile(message);
+                    return;
+                }
+
                 File.AppendAllText(_config.FilePath, message + Environment.NewLine);
             }
             catch (Exception ex)
@@ -58,6 +67,13 @@ public class FileLogger : ILogger
                 Console.WriteLine($"Помилка запису в лог: {ex.Message}");
             }
         }
+    }
+
+    private void RotateLogFile()
+    {
+        string newFileName = Path.Combine(LoggerUtils.GetAppPath(), $"log_{DateTime.Now:yyyyMMdd_HHmmss}.txt");
+        File.Move(_config.FilePath, newFileName);
+        _config.FilePath = newFileName;
     }
 }
 

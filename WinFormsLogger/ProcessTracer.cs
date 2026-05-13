@@ -27,6 +27,11 @@ internal class ProcessTracer
         if (processId > 0)
         {
             Process process = Process.GetProcessById(processId);
+
+            if (process.SessionId == 0) {
+                throw new Exception("The process is running in the system session");
+            }
+
             string windowTitle = GetWindowTitle(foregroundWindow);
 
             // Створити новий запис про процес
