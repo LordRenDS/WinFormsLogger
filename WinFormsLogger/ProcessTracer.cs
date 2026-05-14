@@ -14,25 +14,44 @@ internal class ProcessTracer
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
 
+    private static readonly string[] SystemUIProcesses =
+{
+    "StartMenuExperienceHost", // Меню Пуск
+    "SearchHost",              // Пошук Windows
+    "ShellExperienceHost",     // Центр сповіщень, меню Wi-Fi/звуку
+    "LockApp",                 // Екран блокування
+    "TextInputHost",           // Панель емодзі / сенсорна клавіатура
+    "ApplicationFrameHost",     // Рамки системних вікон
+    "ShellHost" // Системні елементи оболонки
+};
+
     public static DB.Models.Process GetActiveProcess()
     {
-        //try
-        //{
         IntPtr foregroundWindow = GetForegroundWindow();
         int processId = 0;
 
         // Отримати ID процесу активного вікна
         GetWindowThreadProcessId(foregroundWindow, out processId);
 
+
         if (processId > 0)
         {
             Process process = Process.GetProcessById(processId);
-
-            if (process.SessionId == 0) {
-                throw new Exception("The process is running in the system session");
-            }
-
             string windowTitle = GetWindowTitle(foregroundWindow);
+
+            if (string.IsNullOrWhiteSpace(windowTitle))
+                throw new Exception($"The window of process {process.ProcessName}|{windowTitle} has no title (probably a system element)");
+
+            int currentSessionId = Process.GetCurrentProcess().SessionId;
+            if (process.SessionId != currentSessionId)
+                throw new Exception($"Process {process.ProcessName}|{windowTitle} does not belong to the current user's session.");
+
+            if (SystemUIProcesses.Contains(process.ProcessName, StringComparer.OrdinalIgnoreCase))
+                throw new Exception($"Process {process.ProcessName}|{windowTitle} is part of the Windows system interface");
+
+            if (process.ProcessName.Equals("explorer", StringComparison.OrdinalIgnoreCase) &&
+        windowTitle == "Program Manager")
+                throw new Exception("The Desktop is active");
 
             // Створити новий запис про процес
             var newProcess = new DB.Models.Process
@@ -44,12 +63,8 @@ internal class ProcessTracer
 
             return newProcess;
         }
-        throw new Exception("Process ID is invalid.");
-        //}
-        //catch (Exception ex)
-        //{
-        //    // Обробка помилок
-        //}
+        else
+            throw new Exception("Process ID is invalid.");
     }
 
     private static string GetWindowTitle(IntPtr hWnd)
