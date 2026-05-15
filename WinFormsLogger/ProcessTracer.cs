@@ -53,7 +53,7 @@ internal class ProcessTracer : IProcessTracer
             {
                 ProcessName = sysProcess.ProcessName,
                 WindowsName = windowTitle,
-                ProcessStart = DateTime.Now
+                ProcessStart = sysProcess.StartTime
             };
         }
         
