@@ -28,8 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            bindingSource1 = new BindingSource(components);
+            activeProcessTimer = new System.Windows.Forms.Timer(components);
             splitContainer1 = new SplitContainer();
             dataGridView1 = new DataGridView();
             dataGridView2 = new DataGridView();
@@ -44,6 +47,11 @@
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             SuspendLayout();
+            // 
+            // activeProcessTimer
+            // 
+            activeProcessTimer.Interval = 1000;
+            activeProcessTimer.Tick += ActiveProcessTimer_Tick;
             // 
             // splitContainer1
             // 
@@ -169,5 +177,7 @@
         private DataGridViewTextBoxColumn ProcessName;
         private DataGridViewTextBoxColumn WindowsName;
         private DataGridViewTextBoxColumn ProcessStart;
+        private BindingSource bindingSource1;
+        private System.Windows.Forms.Timer activeProcessTimer;
     }
 }

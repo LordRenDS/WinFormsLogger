@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using WinFormsLogger.DB.Models;
 using WinFormsLogger.DB.Tables;
 
@@ -6,39 +6,27 @@ namespace WinFormsLogger;
 
 public partial class Form1 : Form
 {
-    private BindingSource bindingSource1 = new BindingSource();
-    private System.Windows.Forms.Timer activeProcessTimer = new System.Windows.Forms.Timer();
-    private ILoggerFactory loggerFactory = LoggerFactory.Create(builder =>
-    {
-        builder.AddFileLogger(configure => { });
-        builder.AddConsole();
-    });
-    private ILogger<Form> logger;
-    private IProcessRepository processes;
-    private IProcessTracer processTracer;
-    //private Dictionary<string, DateTimeOffset> trackedProcesses = new();
+    private readonly ILogger<Form1> logger;
+    private readonly IProcessRepository processes;
+    private readonly IProcessTracer processTracer;
     private Dictionary<DateTimeOffset, string> trackedProcesses = new();
-    private DataBaseMSQ db;
 
-    public Form1()
+    public Form1(ILogger<Form1> logger, IProcessRepository processes, IProcessTracer processTracer)
     {
         InitializeComponent();
-        this.logger = loggerFactory.CreateLogger<Form1>();
-        this.processTracer = new ProcessTracer();
+        this.logger = logger;
+        this.processes = processes;
+        this.processTracer = processTracer;
     }
 
     private void Form1_Load(object sender, EventArgs e)
     {
         logger.Log(LogLevel.Information, "Form1_Load");
 
-        db = new DataBaseMSQ();
-        processes = new ProcessesT(db);
         bindingSource1.DataSource = processes.GetAllProcesses().ToList();
         dataGridView1.DataSource = bindingSource1;
         LoadTrackedProcessesForToday();
 
-        activeProcessTimer.Interval = 1000; // Перевіряти кожну секунду
-        activeProcessTimer.Tick += ActiveProcessTimer_Tick;
         activeProcessTimer.Start();
     }
 
@@ -86,8 +74,5 @@ public partial class Form1 : Form
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
     {
         activeProcessTimer?.Stop();
-        activeProcessTimer?.Dispose();
-        db?.Dispose();
-        loggerFactory?.Dispose();
     }
 }
