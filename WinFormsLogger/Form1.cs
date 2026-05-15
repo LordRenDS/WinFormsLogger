@@ -9,8 +9,7 @@ public partial class Form1 : Form
     private readonly ILogger<Form1> logger;
     private readonly IProcessRepository processes;
     private readonly IProcessTracer processTracer;
-    private Process? lastActiveProcess = null;
-    private DateTime lastActiveTime;
+    private readonly Dictionary<DateTime, string> trackedInstances = new();
 
     public Form1(ILogger<Form1> logger, IProcessRepository processes, IProcessTracer processTracer)
     {
@@ -24,6 +23,18 @@ public partial class Form1 : Form
     {
         logger.Log(LogLevel.Information, "Form1_Load");
 
+        // Початкове завантаження кешу для процесів, що вже записані сьогодні
+        var todayProcesses = processes.GetAllProcesses()
+            .Where(p => p.ProcessStart.Date == DateTime.Today);
+        
+        foreach (var p in todayProcesses)
+        {
+            if (!trackedInstances.ContainsKey(p.ProcessStart))
+            {
+                trackedInstances.Add(p.ProcessStart, p.ProcessName ?? "Unknown");
+            }
+        }
+
         bindingSource1.DataSource = processes.GetAllProcesses().ToList();
         dataGridView1.DataSource = bindingSource1;
 
@@ -36,34 +47,24 @@ public partial class Form1 : Form
         {
             Process activeProcess = processTracer.GetActiveProcess();
 
-            if (lastActiveProcess != null && 
-                lastActiveProcess.ProcessName == activeProcess.ProcessName && 
-                lastActiveProcess.WindowsName == activeProcess.WindowsName)
+            // Перевіряємо, чи ми вже бачили цей екземпляр процесу
+            if (trackedInstances.ContainsKey(activeProcess.ProcessStart))
             {
-                // Вікно не змінилося, просто чекаємо далі
                 return;
             }
 
-            // Якщо вікно змінилося, розраховуємо тривалість попереднього
-            if (lastActiveProcess != null)
-            {
-                lastActiveProcess.Duration = (int)(DateTime.Now - lastActiveTime).TotalSeconds;
-                processes.UpdateProcess(lastActiveProcess);
-            }
-
-            // Записуємо новий процес
+            // Новий екземпляр процесу
             activeProcess.Duration = 0;
             activeProcess.Id = processes.CreateProcess(activeProcess);
             
-            lastActiveProcess = activeProcess;
-            lastActiveTime = DateTime.Now;
+            trackedInstances.Add(activeProcess.ProcessStart, activeProcess.ProcessName ?? "Unknown");
 
-            logger.Log(LogLevel.Information, $"Новий активний процес: {activeProcess.ProcessName} | {activeProcess.WindowsName}");
+            logger.Log(LogLevel.Information, $"Новий екземпляр процесу: {activeProcess.ProcessName} | {activeProcess.WindowsName} | Start: {activeProcess.ProcessStart}");
             RefreshDataGridView();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            logger.Log(LogLevel.Error, $"Помилка при моніторингу процесів: {ex.Message}");
+            // logger.Log(LogLevel.Trace, $"Моніторинг: {ex.Message}");
         }
     }
 
@@ -75,11 +76,5 @@ public partial class Form1 : Form
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
     {
         activeProcessTimer?.Stop();
-
-        if (lastActiveProcess != null)
-        {
-            lastActiveProcess.Duration = (int)(DateTime.Now - lastActiveTime).TotalSeconds;
-            processes.UpdateProcess(lastActiveProcess);
-        }
     }
 }
