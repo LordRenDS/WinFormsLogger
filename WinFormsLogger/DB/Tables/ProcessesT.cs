@@ -24,7 +24,9 @@ internal class ProcessesT : IProcessRepository
                 Id = reader.GetInt32(0),
                 ProcessName = reader.GetString(1),
                 WindowsName = reader.GetString(2),
-                ProcessStart = reader.GetDateTime(3)
+                ProcessStart = reader.GetDateTime(3),
+                Duration = reader.GetInt32(4),
+                IsSynced = reader.GetInt32(5) == 1
             });
         }
         return processes;
@@ -42,7 +44,9 @@ internal class ProcessesT : IProcessRepository
                 Id = reader.GetInt32(0),
                 ProcessName = reader.GetString(1),
                 WindowsName = reader.GetString(2),
-                ProcessStart = reader.GetDateTime(3)
+                ProcessStart = reader.GetDateTime(3),
+                Duration = reader.GetInt32(4),
+                IsSynced = reader.GetInt32(5) == 1
             };
         }
         return null;
@@ -61,7 +65,9 @@ internal class ProcessesT : IProcessRepository
                 Id = reader.GetInt32(0),
                 ProcessName = reader.GetString(1),
                 WindowsName = reader.GetString(2),
-                ProcessStart = reader.GetDateTime(3)
+                ProcessStart = reader.GetDateTime(3),
+                Duration = reader.GetInt32(4),
+                IsSynced = reader.GetInt32(5) == 1
             });
         }
         return processes;
@@ -69,23 +75,26 @@ internal class ProcessesT : IProcessRepository
 
     public int UpdateProcess(Process process)
     {
-        // Fixed trailing comma before WHERE
-        string statement = "UPDATE Processes SET process_name = @ProcessName, windows_name = @WindowsName, process_start = @ProcessStart WHERE Id = @Id";
+        string statement = "UPDATE Processes SET process_name = @ProcessName, windows_name = @WindowsName, process_start = @ProcessStart, duration = @Duration, is_synced = @IsSynced WHERE Id = @Id";
         using var command = new SqliteCommand(statement, _dataBase.SqConn);
         command.Parameters.AddWithValue("@ProcessName", process.ProcessName);
         command.Parameters.AddWithValue("@WindowsName", process.WindowsName);
         command.Parameters.AddWithValue("@ProcessStart", process.ProcessStart);
+        command.Parameters.AddWithValue("@Duration", process.Duration);
+        command.Parameters.AddWithValue("@IsSynced", process.IsSynced ? 1 : 0);
         command.Parameters.AddWithValue("@Id", process.Id);
         return command.ExecuteNonQuery();
     }
 
     public int CreateProcess(Process process)
     {
-        string statement = "INSERT INTO Processes (process_name, windows_name, process_start) VALUES (@ProcessName, @WindowsName, @ProcessStart)";
+        string statement = "INSERT INTO Processes (process_name, windows_name, process_start, duration, is_synced) VALUES (@ProcessName, @WindowsName, @ProcessStart, @Duration, @IsSynced)";
         using var command = new SqliteCommand(statement, _dataBase.SqConn);
         command.Parameters.AddWithValue("@ProcessName", process.ProcessName);
         command.Parameters.AddWithValue("@WindowsName", process.WindowsName);
         command.Parameters.AddWithValue("@ProcessStart", process.ProcessStart);
+        command.Parameters.AddWithValue("@Duration", process.Duration);
+        command.Parameters.AddWithValue("@IsSynced", process.IsSynced ? 1 : 0);
         return command.ExecuteNonQuery();
     }
 

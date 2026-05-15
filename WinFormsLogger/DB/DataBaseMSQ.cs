@@ -43,6 +43,7 @@ public class DataBaseMSQ : IDisposable
 
     private void CreateTables()
     {
+        ExecuteQuery(TableStatement.ConfigT);
         ExecuteQuery(TableStatement.PcStatusT);
         ExecuteQuery(TableStatement.ProcessesT);
         ExecuteQuery(TableStatement.SchedulesT);
@@ -62,20 +63,28 @@ file static class TableStatement
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             process_name TEXT NOT NULL,
             windows_name TEXT NOT NULL,
-            process_start TIMESTAMP NOT NULL
+            process_start TIMESTAMP NOT NULL,
+            duration INTEGER NOT NULL DEFAULT 0,
+            is_synced INTEGER NOT NULL DEFAULT 0
         );
         """;
     public static readonly string SchedulesT = """
         CREATE TABLE IF NOT EXISTS Schedules (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pc_status_id INTEGER REFERENCES PcStatus(Id) ON DELETE CASCADE ON UPDATE CASCADE,
-            action_time TIMESTAMP NOT NULL
+            timestamp TIMESTAMP NOT NULL,
+            is_synced INTEGER NOT NULL DEFAULT 0
         );
         """;
     public static readonly string PcStatusT = """
         CREATE TABLE IF NOT EXISTS PcStatus (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             status TEXT NOT NULL
+        );
+        """;
+    public static readonly string ConfigT = """
+        CREATE TABLE IF NOT EXISTS Config (
+            pc_id TEXT PRIMARY KEY
         );
         """;
 }
