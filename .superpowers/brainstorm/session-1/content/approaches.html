@@ -1,0 +1,37 @@
+<h2>Виберіть напрямок для навички 'rdb-developer'</h2>
+<p class="subtitle">Ці підходи допоможуть створити надійну систему без зовнішніх фреймворків</p>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="fundamental" onclick="toggleSelect(this)">
+    <div class="letter">1</div>
+    <div class="content">
+      <h3>Фундаментальний SQL та Repository</h3>
+      <p>Фокус на чистій структурі (1NF-3NF), ручному Repository та захисті від ін'єкцій.</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Простота</li><li>Ніяких залежностей</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="migrations" onclick="toggleSelect(this)">
+    <div class="letter">2</div>
+    <div class="content">
+      <h3>Життєвий цикл та Міграції</h3>
+      <p>Система версіонування схеми. Дозволяє безпечно оновлювати базу у користувачів.</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Надійність оновлень</li><li>Простий деплой</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="sqlite-opt" onclick="toggleSelect(this)">
+    <div class="letter">3</div>
+    <div class="content">
+      <h3>Оптимізація SQLite</h3>
+      <p>Використання WAL режиму, налаштування PRAGMA та специфічних особливостей SQLite.</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Максимальна швидкість</li><li>Стійкість до збоїв</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

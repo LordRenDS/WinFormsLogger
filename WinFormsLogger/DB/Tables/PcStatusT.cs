@@ -14,57 +14,72 @@ internal class PcStatusT : IPcStatusRepository
 
     public IEnumerable<PcStatus> GetAll()
     {
-        var statuses = new List<PcStatus>();
-        using var command = new SqliteCommand("SELECT id, status FROM PcStatus", _dataBase.SqConn);
-        using var reader = command.ExecuteReader();
-        while (reader.Read())
+        lock (_dataBase.DbLock)
         {
-            statuses.Add(new PcStatus
+            var statuses = new List<PcStatus>();
+            using var command = new SqliteCommand("SELECT id, status FROM PcStatus", _dataBase.SqConn);
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
             {
-                Id = reader.GetInt32(0),
-                Status = reader.IsDBNull(1) ? null : reader.GetString(1)
-            });
+                statuses.Add(new PcStatus
+                {
+                    Id = reader.GetInt32(0),
+                    Status = reader.IsDBNull(1) ? null : reader.GetString(1)
+                });
+            }
+            return statuses;
         }
-        return statuses;
     }
 
     public PcStatus? GetById(int id)
     {
-        using var command = new SqliteCommand("SELECT id, status FROM PcStatus WHERE id = @Id", _dataBase.SqConn);
-        command.Parameters.AddWithValue("@Id", id);
-        using var reader = command.ExecuteReader();
-        if (reader.Read())
+        lock (_dataBase.DbLock)
         {
-            return new PcStatus
+            using var command = new SqliteCommand("SELECT id, status FROM PcStatus WHERE id = @Id", _dataBase.SqConn);
+            command.Parameters.AddWithValue("@Id", id);
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
             {
-                Id = reader.GetInt32(0),
-                Status = reader.IsDBNull(1) ? null : reader.GetString(1)
-            };
+                return new PcStatus
+                {
+                    Id = reader.GetInt32(0),
+                    Status = reader.IsDBNull(1) ? null : reader.GetString(1)
+                };
+            }
+            return null;
         }
-        return null;
     }
 
     public int Create(PcStatus status)
     {
-        string statement = "INSERT INTO PcStatus (status) VALUES (@Status)";
-        using var command = new SqliteCommand(statement, _dataBase.SqConn);
-        command.Parameters.AddWithValue("@Status", (object?)status.Status ?? DBNull.Value);
-        return command.ExecuteNonQuery();
+        lock (_dataBase.DbLock)
+        {
+            string statement = "INSERT INTO PcStatus (status) VALUES (@Status)";
+            using var command = new SqliteCommand(statement, _dataBase.SqConn);
+            command.Parameters.AddWithValue("@Status", (object?)status.Status ?? DBNull.Value);
+            return command.ExecuteNonQuery();
+        }
     }
 
     public int Update(PcStatus status)
     {
-        string statement = "UPDATE PcStatus SET status = @Status WHERE id = @Id";
-        using var command = new SqliteCommand(statement, _dataBase.SqConn);
-        command.Parameters.AddWithValue("@Status", (object?)status.Status ?? DBNull.Value);
-        command.Parameters.AddWithValue("@Id", status.Id);
-        return command.ExecuteNonQuery();
+        lock (_dataBase.DbLock)
+        {
+            string statement = "UPDATE PcStatus SET status = @Status WHERE id = @Id";
+            using var command = new SqliteCommand(statement, _dataBase.SqConn);
+            command.Parameters.AddWithValue("@Status", (object?)status.Status ?? DBNull.Value);
+            command.Parameters.AddWithValue("@Id", status.Id);
+            return command.ExecuteNonQuery();
+        }
     }
 
     public int Delete(int id)
     {
-        using var command = new SqliteCommand("DELETE FROM PcStatus WHERE id = @Id", _dataBase.SqConn);
-        command.Parameters.AddWithValue("@Id", id);
-        return command.ExecuteNonQuery();
+        lock (_dataBase.DbLock)
+        {
+            using var command = new SqliteCommand("DELETE FROM PcStatus WHERE id = @Id", _dataBase.SqConn);
+            command.Parameters.AddWithValue("@Id", id);
+            return command.ExecuteNonQuery();
+        }
     }
 }

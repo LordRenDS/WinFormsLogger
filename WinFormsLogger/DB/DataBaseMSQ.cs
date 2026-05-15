@@ -5,6 +5,7 @@ namespace WinFormsLogger;
 public class DataBaseMSQ : IDisposable
 {
     public SqliteConnection? SqConn { get; private set; }
+    public object DbLock { get; } = new();
 
     public DataBaseMSQ()
     {
@@ -52,26 +53,32 @@ public class DataBaseMSQ : IDisposable
 
     private void SeedData()
     {
-        string[] statuses = { "PowerOn", "PowerOff", "Locked", "Unlocked" };
-        foreach (var status in statuses)
+        lock (DbLock)
         {
-            using var checkCommand = new SqliteCommand("SELECT COUNT(*) FROM PcStatus WHERE status = @status", this.SqConn);
-            checkCommand.Parameters.AddWithValue("@status", status);
-            var count = Convert.ToInt32(checkCommand.ExecuteScalar());
-
-            if (count == 0)
+            string[] statuses = { "PowerOn", "PowerOff", "Locked", "Unlocked" };
+            foreach (var status in statuses)
             {
-                using var insertCommand = new SqliteCommand("INSERT INTO PcStatus (status) VALUES (@status)", this.SqConn);
-                insertCommand.Parameters.AddWithValue("@status", status);
-                insertCommand.ExecuteNonQuery();
+                using var checkCommand = new SqliteCommand("SELECT COUNT(*) FROM PcStatus WHERE status = @status", this.SqConn);
+                checkCommand.Parameters.AddWithValue("@status", status);
+                var count = Convert.ToInt32(checkCommand.ExecuteScalar());
+
+                if (count == 0)
+                {
+                    using var insertCommand = new SqliteCommand("INSERT INTO PcStatus (status) VALUES (@status)", this.SqConn);
+                    insertCommand.Parameters.AddWithValue("@status", status);
+                    insertCommand.ExecuteNonQuery();
+                }
             }
         }
     }
 
     private void ExecuteQuery(string statement)
     {
-        using SqliteCommand command = new SqliteCommand(statement, this.SqConn);
-        command.ExecuteNonQuery();
+        lock (DbLock)
+        {
+            using SqliteCommand command = new SqliteCommand(statement, this.SqConn);
+            command.ExecuteNonQuery();
+        }
     }
 }
 

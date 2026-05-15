@@ -16,7 +16,8 @@ internal static class Program
         
         var services = new ServiceCollection();
         ConfigureServices(services);
-        ServiceProvider = services.BuildServiceProvider();
+        using var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider = serviceProvider;
 
         var form1 = ServiceProvider.GetRequiredService<Form1>();
         Application.Run(form1);
@@ -39,6 +40,7 @@ internal static class Program
         services.AddSingleton<ISystemEventWatcher, SystemEventWatcher>();
         services.AddSingleton<IDeviceIdentityService, DeviceIdentityService>();
         services.AddSingleton<ICredentialService, CredentialService>();
+        services.AddSingleton<IServerSyncService, ServerSyncService>();
         services.AddTransient<Form1>();
     }
 }

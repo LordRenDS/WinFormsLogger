@@ -47,40 +47,61 @@ public class SystemEventWatcher : ISystemEventWatcher, IDisposable
 
     private void OnSessionSwitch(object sender, SessionSwitchEventArgs e)
     {
-        _logger.LogInformation($"SessionSwitch: {e.Reason}");
-        switch (e.Reason)
+        try
         {
-            case SessionSwitchReason.SessionLock:
-                LogStatus("Locked");
-                break;
-            case SessionSwitchReason.SessionUnlock:
-                LogStatus("Unlocked");
-                break;
+            _logger.LogInformation($"SessionSwitch: {e.Reason}");
+            switch (e.Reason)
+            {
+                case SessionSwitchReason.SessionLock:
+                    LogStatus("Locked");
+                    break;
+                case SessionSwitchReason.SessionUnlock:
+                    LogStatus("Unlocked");
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling SessionSwitch event");
         }
     }
 
     private void OnSessionEnding(object sender, SessionEndingEventArgs e)
     {
-        _logger.LogInformation($"SessionEnding: {e.Reason}");
-        LogStatus("PowerOff");
+        try
+        {
+            _logger.LogInformation($"SessionEnding: {e.Reason}");
+            LogStatus("PowerOff");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling SessionEnding event");
+        }
     }
 
     private void LogStatus(string statusName)
     {
-        if (_statusMap.TryGetValue(statusName, out int statusId))
+        try
         {
-            var schedule = new Schedule
+            if (_statusMap.TryGetValue(statusName, out int statusId))
             {
-                PcStatusId = statusId,
-                Timestamp = DateTime.Now,
-                IsSynced = false
-            };
-            _scheduleRepository.Create(schedule);
-            _logger.LogInformation($"Logged PC status: {statusName}");
+                var schedule = new Schedule
+                {
+                    PcStatusId = statusId,
+                    Timestamp = DateTime.Now,
+                    IsSynced = false
+                };
+                _scheduleRepository.Create(schedule);
+                _logger.LogInformation($"Logged PC status: {statusName}");
+            }
+            else
+            {
+                _logger.LogWarning($"Status '{statusName}' not found in database.");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            _logger.LogWarning($"Status '{statusName}' not found in database.");
+            _logger.LogError(ex, $"Error logging status: {statusName}");
         }
     }
 

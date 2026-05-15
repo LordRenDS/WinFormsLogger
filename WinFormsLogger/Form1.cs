@@ -13,10 +13,17 @@ public partial class Form1 : Form
     private readonly IProcessTracer processTracer;
     private readonly ICredentialService credentialService;
     private readonly ISystemEventWatcher systemEventWatcher;
+    private readonly IServerSyncService serverSyncService;
     private readonly Dictionary<DateTime, int> trackedInstances = new();
     private bool _isExiting = false;
 
-    public Form1(ILogger<Form1> logger, IProcessRepository processes, IProcessTracer processTracer, ICredentialService credentialService, ISystemEventWatcher systemEventWatcher)
+    public Form1(
+        ILogger<Form1> logger, 
+        IProcessRepository processes, 
+        IProcessTracer processTracer, 
+        ICredentialService credentialService, 
+        ISystemEventWatcher systemEventWatcher,
+        IServerSyncService serverSyncService)
     {
         InitializeComponent();
         this.logger = logger;
@@ -24,6 +31,10 @@ public partial class Form1 : Form
         this.processTracer = processTracer;
         this.credentialService = credentialService;
         this.systemEventWatcher = systemEventWatcher;
+        this.serverSyncService = serverSyncService;
+        
+        // Ensure the tray icon uses the form's icon
+        this.notifyIcon1.Icon = this.Icon;
     }
 
     private void Form1_Load(object sender, EventArgs e)
@@ -152,5 +163,25 @@ public partial class Form1 : Form
         this.Show();
         this.WindowState = FormWindowState.Normal;
         this.Activate();
+    }
+
+    private async void syncNowToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        syncNowToolStripMenuItem.Enabled = false;
+        try
+        {
+            await serverSyncService.SyncAsync();
+            MessageBox.Show("Синхронізація завершена", "Sync", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            RefreshDataGridView();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Manual sync failed");
+            MessageBox.Show($"Помилка синхронізації: {ex.Message}", "Sync Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            syncNowToolStripMenuItem.Enabled = true;
+        }
     }
 }

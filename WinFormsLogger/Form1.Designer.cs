@@ -209,6 +209,7 @@
             syncNowToolStripMenuItem.Name = "syncNowToolStripMenuItem";
             syncNowToolStripMenuItem.Size = new Size(127, 22);
             syncNowToolStripMenuItem.Text = "Sync Now";
+            syncNowToolStripMenuItem.Click += syncNowToolStripMenuItem_Click;
             // 
             // notifyIcon1
             // 
