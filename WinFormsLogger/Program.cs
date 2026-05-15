@@ -31,6 +31,9 @@ internal static class Program
 
         services.AddSingleton<DataBaseMSQ>();
         services.AddTransient<IProcessRepository, ProcessesT>();
+        services.AddTransient<IConfigRepository, ConfigT>();
+        services.AddTransient<IPcStatusRepository, PcStatusT>();
+        services.AddTransient<IScheduleRepository, SchedulesT>();
         services.AddTransient<IProcessTracer, ProcessTracer>();
         services.AddTransient<Form1>();
     }
