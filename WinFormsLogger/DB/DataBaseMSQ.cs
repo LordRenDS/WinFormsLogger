@@ -10,6 +10,7 @@ public class DataBaseMSQ : IDisposable
     {
         CreateConnection();
         CreateTables();
+        SeedData();
     }
 
     public void Dispose()
@@ -47,6 +48,24 @@ public class DataBaseMSQ : IDisposable
         ExecuteQuery(TableStatement.PcStatusT);
         ExecuteQuery(TableStatement.ProcessesT);
         ExecuteQuery(TableStatement.SchedulesT);
+    }
+
+    private void SeedData()
+    {
+        string[] statuses = { "PowerOn", "PowerOff", "Locked", "Unlocked" };
+        foreach (var status in statuses)
+        {
+            using var checkCommand = new SqliteCommand("SELECT COUNT(*) FROM PcStatus WHERE status = @status", this.SqConn);
+            checkCommand.Parameters.AddWithValue("@status", status);
+            var count = Convert.ToInt32(checkCommand.ExecuteScalar());
+
+            if (count == 0)
+            {
+                using var insertCommand = new SqliteCommand("INSERT INTO PcStatus (status) VALUES (@status)", this.SqConn);
+                insertCommand.Parameters.AddWithValue("@status", status);
+                insertCommand.ExecuteNonQuery();
+            }
+        }
     }
 
     private void ExecuteQuery(string statement)

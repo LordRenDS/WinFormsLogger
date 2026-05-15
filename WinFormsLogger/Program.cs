@@ -36,6 +36,7 @@ internal static class Program
         services.AddTransient<IPcStatusRepository, PcStatusT>();
         services.AddTransient<IScheduleRepository, SchedulesT>();
         services.AddTransient<IProcessTracer, ProcessTracer>();
+        services.AddSingleton<ISystemEventWatcher, SystemEventWatcher>();
         services.AddSingleton<IDeviceIdentityService, DeviceIdentityService>();
         services.AddSingleton<ICredentialService, CredentialService>();
         services.AddTransient<Form1>();

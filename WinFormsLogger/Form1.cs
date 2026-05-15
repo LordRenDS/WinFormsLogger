@@ -12,21 +12,24 @@ public partial class Form1 : Form
     private readonly IProcessRepository processes;
     private readonly IProcessTracer processTracer;
     private readonly ICredentialService credentialService;
+    private readonly ISystemEventWatcher systemEventWatcher;
     private readonly Dictionary<DateTime, int> trackedInstances = new();
     private bool _isExiting = false;
 
-    public Form1(ILogger<Form1> logger, IProcessRepository processes, IProcessTracer processTracer, ICredentialService credentialService)
+    public Form1(ILogger<Form1> logger, IProcessRepository processes, IProcessTracer processTracer, ICredentialService credentialService, ISystemEventWatcher systemEventWatcher)
     {
         InitializeComponent();
         this.logger = logger;
         this.processes = processes;
         this.processTracer = processTracer;
         this.credentialService = credentialService;
+        this.systemEventWatcher = systemEventWatcher;
     }
 
     private void Form1_Load(object sender, EventArgs e)
     {
         logger.Log(LogLevel.Information, "Form1_Load");
+        systemEventWatcher.Start();
 
         // Початкове завантаження кешу для процесів, що вже записані сьогодні
         var todayProcesses = processes.GetAllProcesses()
