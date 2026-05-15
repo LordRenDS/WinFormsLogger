@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
 using WinFormsLogger.DB.Models;
 using WinFormsLogger.DB.Tables;
+using WinFormsLogger.Forms;
+using WinFormsLogger.Services;
 
 namespace WinFormsLogger;
 
@@ -9,14 +11,17 @@ public partial class Form1 : Form
     private readonly ILogger<Form1> logger;
     private readonly IProcessRepository processes;
     private readonly IProcessTracer processTracer;
+    private readonly ICredentialService credentialService;
     private readonly Dictionary<DateTime, int> trackedInstances = new();
+    private bool _isExiting = false;
 
-    public Form1(ILogger<Form1> logger, IProcessRepository processes, IProcessTracer processTracer)
+    public Form1(ILogger<Form1> logger, IProcessRepository processes, IProcessTracer processTracer, ICredentialService credentialService)
     {
         InitializeComponent();
         this.logger = logger;
         this.processes = processes;
         this.processTracer = processTracer;
+        this.credentialService = credentialService;
     }
 
     private void Form1_Load(object sender, EventArgs e)
@@ -39,6 +44,22 @@ public partial class Form1 : Form
         dataGridView1.DataSource = bindingSource1;
 
         activeProcessTimer.Start();
+    }
+
+    private void loginToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        using var loginForm = new LoginForm();
+        if (loginForm.ShowDialog() == DialogResult.OK)
+        {
+            credentialService.SaveCredentials(loginForm.Username, loginForm.Password);
+            MessageBox.Show("Вхід виконано успішно", "Login", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+    }
+
+    private void logoutToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        credentialService.DeleteCredentials();
+        MessageBox.Show("Вихід виконано", "Logout", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
     private void ActiveProcessTimer_Tick(object? sender, EventArgs e)
@@ -77,6 +98,14 @@ public partial class Form1 : Form
 
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
     {
+        if (!_isExiting && e.CloseReason == CloseReason.UserClosing)
+        {
+            e.Cancel = true;
+            this.Hide();
+            notifyIcon1.ShowBalloonTip(2000, "WinFormsLogger", "Застосунок продовжує працювати у треї", ToolTipIcon.Info);
+            return;
+        }
+
         activeProcessTimer?.Stop();
 
         try
@@ -97,5 +126,28 @@ public partial class Form1 : Form
         {
             // ignore
         }
+    }
+
+    private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+    {
+        ShowForm();
+    }
+
+    private void openToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        ShowForm();
+    }
+
+    private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        _isExiting = true;
+        Application.Exit();
+    }
+
+    private void ShowForm()
+    {
+        this.Show();
+        this.WindowState = FormWindowState.Normal;
+        this.Activate();
     }
 }

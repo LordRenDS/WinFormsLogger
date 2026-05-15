@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             bindingSource1 = new BindingSource(components);
@@ -40,12 +41,25 @@
             ProcessName = new DataGridViewTextBoxColumn();
             WindowsName = new DataGridViewTextBoxColumn();
             ProcessStart = new DataGridViewTextBoxColumn();
+            menuStrip1 = new MenuStrip();
+            accountToolStripMenuItem = new ToolStripMenuItem();
+            loginToolStripMenuItem = new ToolStripMenuItem();
+            logoutToolStripMenuItem = new ToolStripMenuItem();
+            syncToolStripMenuItem = new ToolStripMenuItem();
+            settingsToolStripMenuItem = new ToolStripMenuItem();
+            syncNowToolStripMenuItem = new ToolStripMenuItem();
+            notifyIcon1 = new NotifyIcon(components);
+            contextMenuStrip1 = new ContextMenuStrip(components);
+            openToolStripMenuItem = new ToolStripMenuItem();
+            exitToolStripMenuItem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
+            menuStrip1.SuspendLayout();
+            contextMenuStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // activeProcessTimer
@@ -56,7 +70,7 @@
             // splitContainer1
             // 
             splitContainer1.Dock = DockStyle.Fill;
-            splitContainer1.Location = new Point(6, 6);
+            splitContainer1.Location = new Point(6, 30);
             splitContainer1.Margin = new Padding(0);
             splitContainer1.Name = "splitContainer1";
             splitContainer1.Orientation = Orientation.Horizontal;
@@ -68,8 +82,8 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(dataGridView2);
-            splitContainer1.Size = new Size(688, 326);
-            splitContainer1.SplitterDistance = 198;
+            splitContainer1.Size = new Size(688, 302);
+            splitContainer1.SplitterDistance = 183;
             splitContainer1.SplitterWidth = 6;
             splitContainer1.TabIndex = 0;
             // 
@@ -91,7 +105,7 @@
             dataGridView1.Location = new Point(0, 0);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.ReadOnly = true;
-            dataGridView1.Size = new Size(688, 198);
+            dataGridView1.Size = new Size(688, 183);
             dataGridView1.TabIndex = 0;
             // 
             // dataGridView2
@@ -105,7 +119,7 @@
             dataGridView2.Location = new Point(0, 0);
             dataGridView2.Name = "dataGridView2";
             dataGridView2.ReadOnly = true;
-            dataGridView2.Size = new Size(688, 122);
+            dataGridView2.Size = new Size(688, 113);
             dataGridView2.TabIndex = 1;
             // 
             // Id
@@ -147,16 +161,96 @@
             ProcessStart.ReadOnly = true;
             ProcessStart.Width = 124;
             // 
+            // menuStrip1
+            // 
+            menuStrip1.Items.AddRange(new ToolStripItem[] { accountToolStripMenuItem, syncToolStripMenuItem });
+            menuStrip1.Location = new Point(6, 6);
+            menuStrip1.Name = "menuStrip1";
+            menuStrip1.Size = new Size(688, 24);
+            menuStrip1.TabIndex = 1;
+            menuStrip1.Text = "menuStrip1";
+            // 
+            // accountToolStripMenuItem
+            // 
+            accountToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { loginToolStripMenuItem, logoutToolStripMenuItem });
+            accountToolStripMenuItem.Name = "accountToolStripMenuItem";
+            accountToolStripMenuItem.Size = new Size(64, 20);
+            accountToolStripMenuItem.Text = "Account";
+            // 
+            // loginToolStripMenuItem
+            // 
+            loginToolStripMenuItem.Name = "loginToolStripMenuItem";
+            loginToolStripMenuItem.Size = new Size(112, 22);
+            loginToolStripMenuItem.Text = "Login";
+            loginToolStripMenuItem.Click += loginToolStripMenuItem_Click;
+            // 
+            // logoutToolStripMenuItem
+            // 
+            logoutToolStripMenuItem.Name = "logoutToolStripMenuItem";
+            logoutToolStripMenuItem.Size = new Size(112, 22);
+            logoutToolStripMenuItem.Text = "Logout";
+            logoutToolStripMenuItem.Click += logoutToolStripMenuItem_Click;
+            // 
+            // syncToolStripMenuItem
+            // 
+            syncToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { settingsToolStripMenuItem, syncNowToolStripMenuItem });
+            syncToolStripMenuItem.Name = "syncToolStripMenuItem";
+            syncToolStripMenuItem.Size = new Size(44, 20);
+            syncToolStripMenuItem.Text = "Sync";
+            // 
+            // settingsToolStripMenuItem
+            // 
+            settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            settingsToolStripMenuItem.Size = new Size(127, 22);
+            settingsToolStripMenuItem.Text = "Settings";
+            // 
+            // syncNowToolStripMenuItem
+            // 
+            syncNowToolStripMenuItem.Name = "syncNowToolStripMenuItem";
+            syncNowToolStripMenuItem.Size = new Size(127, 22);
+            syncNowToolStripMenuItem.Text = "Sync Now";
+            // 
+            // notifyIcon1
+            // 
+            notifyIcon1.ContextMenuStrip = contextMenuStrip1;
+            notifyIcon1.Icon = (Icon)resources.GetObject("$this.Icon");
+            notifyIcon1.Text = "WinFormsLogger";
+            notifyIcon1.Visible = true;
+            notifyIcon1.MouseDoubleClick += notifyIcon1_MouseDoubleClick;
+            // 
+            // contextMenuStrip1
+            // 
+            contextMenuStrip1.Items.AddRange(new ToolStripItem[] { openToolStripMenuItem, exitToolStripMenuItem });
+            contextMenuStrip1.Name = "contextMenuStrip1";
+            contextMenuStrip1.Size = new Size(104, 48);
+            // 
+            // openToolStripMenuItem
+            // 
+            openToolStripMenuItem.Name = "openToolStripMenuItem";
+            openToolStripMenuItem.Size = new Size(103, 22);
+            openToolStripMenuItem.Text = "Open";
+            openToolStripMenuItem.Click += openToolStripMenuItem_Click;
+            // 
+            // exitToolStripMenuItem
+            // 
+            exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            exitToolStripMenuItem.Size = new Size(103, 22);
+            exitToolStripMenuItem.Text = "Exit";
+            exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(700, 338);
             Controls.Add(splitContainer1);
+            Controls.Add(menuStrip1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
+            MainMenuStrip = menuStrip1;
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
             Padding = new Padding(6);
-            Text = "Form1";
+            Text = "WinFormsLogger";
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             splitContainer1.Panel1.ResumeLayout(false);
@@ -165,7 +259,11 @@
             splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
+            menuStrip1.ResumeLayout(false);
+            menuStrip1.PerformLayout();
+            contextMenuStrip1.ResumeLayout(false);
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -179,5 +277,15 @@
         private DataGridViewTextBoxColumn ProcessStart;
         private BindingSource bindingSource1;
         private System.Windows.Forms.Timer activeProcessTimer;
-    }
+        private MenuStrip menuStrip1;
+        private ToolStripMenuItem accountToolStripMenuItem;
+        private ToolStripMenuItem loginToolStripMenuItem;
+        private ToolStripMenuItem logoutToolStripMenuItem;
+        private ToolStripMenuItem syncToolStripMenuItem;
+        private ToolStripMenuItem settingsToolStripMenuItem;
+        private ToolStripMenuItem syncNowToolStripMenuItem;
+        private NotifyIcon notifyIcon1;
+        private ContextMenuStrip contextMenuStrip1;
+        private ToolStripMenuItem openToolStripMenuItem;
+        private ToolStripMenuItem exitToolStripMenuItem;    }
 }
