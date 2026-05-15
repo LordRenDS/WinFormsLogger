@@ -9,7 +9,8 @@ public partial class Form1 : Form
     private readonly ILogger<Form1> logger;
     private readonly IProcessRepository processes;
     private readonly IProcessTracer processTracer;
-    private Dictionary<DateTimeOffset, string> trackedProcesses = new();
+    private Process? lastActiveProcess = null;
+    private DateTime lastActiveTime;
 
     public Form1(ILogger<Form1> logger, IProcessRepository processes, IProcessTracer processTracer)
     {
@@ -25,7 +26,6 @@ public partial class Form1 : Form
 
         bindingSource1.DataSource = processes.GetAllProcesses().ToList();
         dataGridView1.DataSource = bindingSource1;
-        LoadTrackedProcessesForToday();
 
         activeProcessTimer.Start();
     }
@@ -35,19 +35,30 @@ public partial class Form1 : Form
         try
         {
             Process activeProcess = processTracer.GetActiveProcess();
-            DateTimeOffset processKey = activeProcess.ProcessStart;
 
-            if (trackedProcesses.ContainsKey(activeProcess.ProcessStart))
+            if (lastActiveProcess != null && 
+                lastActiveProcess.ProcessName == activeProcess.ProcessName && 
+                lastActiveProcess.WindowsName == activeProcess.WindowsName)
             {
-                logger.Log(LogLevel.Debug, $"Активний процес (існуючий): {activeProcess.ProcessName}");
+                // Вікно не змінилося, просто чекаємо далі
                 return;
             }
 
-            // Новий процес - зберегти в БД
-            processes.CreateProcess(activeProcess);
-            trackedProcesses[processKey] = $"{activeProcess.ProcessName}|{activeProcess.WindowsName}";
+            // Якщо вікно змінилося, розраховуємо тривалість попереднього
+            if (lastActiveProcess != null)
+            {
+                lastActiveProcess.Duration = (int)(DateTime.Now - lastActiveTime).TotalSeconds;
+                processes.UpdateProcess(lastActiveProcess);
+            }
 
-            logger.Log(LogLevel.Information, $"Новий процес добавлений: {activeProcess.ProcessName}");
+            // Записуємо новий процес
+            activeProcess.Duration = 0;
+            activeProcess.Id = processes.CreateProcess(activeProcess);
+            
+            lastActiveProcess = activeProcess;
+            lastActiveTime = DateTime.Now;
+
+            logger.Log(LogLevel.Information, $"Новий активний процес: {activeProcess.ProcessName} | {activeProcess.WindowsName}");
             RefreshDataGridView();
         }
         catch (Exception ex)
@@ -56,16 +67,6 @@ public partial class Form1 : Form
         }
     }
 
-    private void LoadTrackedProcessesForToday()
-    {
-        trackedProcesses.Clear();
-        var allProcesses = processes.GetProcessesByDate(DateOnly.FromDateTime(DateTime.Now)).ToList();
-
-        foreach (var process in allProcesses)
-            trackedProcesses.Add(process.ProcessStart, $"{process.ProcessName}|{process.WindowsName}");
-
-        logger.Log(LogLevel.Information, $"Завантажено {trackedProcesses.Count} відстежених процесів за сьогодні");
-    }
     private void RefreshDataGridView()
     {
         bindingSource1.DataSource = processes.GetAllProcesses().ToList();
@@ -74,5 +75,11 @@ public partial class Form1 : Form
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
     {
         activeProcessTimer?.Stop();
+
+        if (lastActiveProcess != null)
+        {
+            lastActiveProcess.Duration = (int)(DateTime.Now - lastActiveTime).TotalSeconds;
+            processes.UpdateProcess(lastActiveProcess);
+        }
     }
 }

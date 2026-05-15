@@ -88,14 +88,14 @@ internal class ProcessesT : IProcessRepository
 
     public int CreateProcess(Process process)
     {
-        string statement = "INSERT INTO Processes (process_name, windows_name, process_start, duration, is_synced) VALUES (@ProcessName, @WindowsName, @ProcessStart, @Duration, @IsSynced)";
+        string statement = "INSERT INTO Processes (process_name, windows_name, process_start, duration, is_synced) VALUES (@ProcessName, @WindowsName, @ProcessStart, @Duration, @IsSynced); SELECT last_insert_rowid();";
         using var command = new SqliteCommand(statement, _dataBase.SqConn);
         command.Parameters.AddWithValue("@ProcessName", process.ProcessName);
         command.Parameters.AddWithValue("@WindowsName", process.WindowsName);
         command.Parameters.AddWithValue("@ProcessStart", process.ProcessStart);
         command.Parameters.AddWithValue("@Duration", process.Duration);
         command.Parameters.AddWithValue("@IsSynced", process.IsSynced ? 1 : 0);
-        return command.ExecuteNonQuery();
+        return Convert.ToInt32(command.ExecuteScalar());
     }
 
     public int DeleteProcess(int id)
