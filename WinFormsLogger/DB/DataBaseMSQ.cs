@@ -4,7 +4,7 @@ namespace WinFormsLogger;
 
 public class DataBaseMSQ : IDisposable
 {
-    public SqliteConnection SqConn { get; private set; }
+    public SqliteConnection? SqConn { get; private set; }
 
     public DataBaseMSQ()
     {

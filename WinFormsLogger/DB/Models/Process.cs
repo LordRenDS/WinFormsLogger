@@ -3,8 +3,8 @@
 public class Process
 {
     public int Id { get; set; }
-    public string ProcessName { get; set; }
-    public string WindowsName { get; set; }
+    public string? ProcessName { get; set; }
+    public string? WindowsName { get; set; }
     public DateTime ProcessStart { get; set; }
 
     public override string ToString()

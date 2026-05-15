@@ -1,16 +1,37 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using WinFormsLogger.DB.Tables;
+
 namespace WinFormsLogger;
 
 internal static class Program
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
+    public static IServiceProvider ServiceProvider { get; private set; } = null!;
+
     [STAThread]
     static void Main()
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        Application.Run(new Form1(null!, null!, null!));
+        
+        var services = new ServiceCollection();
+        ConfigureServices(services);
+        ServiceProvider = services.BuildServiceProvider();
+
+        var form1 = ServiceProvider.GetRequiredService<Form1>();
+        Application.Run(form1);
+    }
+
+    private static void ConfigureServices(IServiceCollection services)
+    {
+        services.AddLogging(builder =>
+        {
+            builder.AddFileLogger(configure => { });
+            builder.AddConsole();
+        });
+
+        services.AddSingleton<DataBaseMSQ>();
+        services.AddTransient<IProcessRepository, ProcessesT>();
+        services.AddTransient<IProcessTracer, ProcessTracer>();
+        services.AddTransient<Form1>();
     }
 }
