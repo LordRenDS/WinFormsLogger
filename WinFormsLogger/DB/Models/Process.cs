@@ -1,6 +1,6 @@
 ﻿namespace WinFormsLogger.DB.Models;
 
-internal class Process
+public class Process
 {
     public int Id { get; set; }
     public string ProcessName { get; set; }

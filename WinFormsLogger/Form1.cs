@@ -14,7 +14,8 @@ public partial class Form1 : Form
         builder.AddConsole();
     });
     private ILogger<Form> logger;
-    private ProcessesT processes;
+    private IProcessRepository processes;
+    private IProcessTracer processTracer;
     //private Dictionary<string, DateTimeOffset> trackedProcesses = new();
     private Dictionary<DateTimeOffset, string> trackedProcesses = new();
     private DataBaseMSQ db;
@@ -23,6 +24,7 @@ public partial class Form1 : Form
     {
         InitializeComponent();
         this.logger = loggerFactory.CreateLogger<Form1>();
+        this.processTracer = new ProcessTracer();
     }
 
     private void Form1_Load(object sender, EventArgs e)
@@ -30,9 +32,8 @@ public partial class Form1 : Form
         logger.Log(LogLevel.Information, "Form1_Load");
 
         db = new DataBaseMSQ();
-        db.SqConn.Open();
-        processes = new ProcessesT(db.SqConn);
-        bindingSource1.DataSource = processes.Processes;
+        processes = new ProcessesT(db);
+        bindingSource1.DataSource = processes.GetAllProcesses().ToList();
         dataGridView1.DataSource = bindingSource1;
         LoadTrackedProcessesForToday();
 
@@ -45,7 +46,7 @@ public partial class Form1 : Form
     {
         try
         {
-            Process activeProcess = ProcessTracer.GetActiveProcess();
+            Process activeProcess = processTracer.GetActiveProcess();
             DateTimeOffset processKey = activeProcess.ProcessStart;
 
             if (trackedProcesses.ContainsKey(activeProcess.ProcessStart))
@@ -55,7 +56,7 @@ public partial class Form1 : Form
             }
 
             // Новий процес - зберегти в БД
-            processes.CreateProcesses(activeProcess);
+            processes.CreateProcess(activeProcess);
             trackedProcesses[processKey] = $"{activeProcess.ProcessName}|{activeProcess.WindowsName}";
 
             logger.Log(LogLevel.Information, $"Новий процес добавлений: {activeProcess.ProcessName}");
@@ -70,7 +71,7 @@ public partial class Form1 : Form
     private void LoadTrackedProcessesForToday()
     {
         trackedProcesses.Clear();
-        List<Process> allProcesses = processes.GetProcessesByDate(DateOnly.FromDateTime(DateTime.Now));
+        var allProcesses = processes.GetProcessesByDate(DateOnly.FromDateTime(DateTime.Now)).ToList();
 
         foreach (var process in allProcesses)
             trackedProcesses.Add(process.ProcessStart, $"{process.ProcessName}|{process.WindowsName}");
@@ -79,14 +80,13 @@ public partial class Form1 : Form
     }
     private void RefreshDataGridView()
     {
-        bindingSource1.DataSource = processes.Processes;
+        bindingSource1.DataSource = processes.GetAllProcesses().ToList();
     }
 
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
     {
         activeProcessTimer?.Stop();
         activeProcessTimer?.Dispose();
-        db?.SqConn?.Close();
         db?.Dispose();
         loggerFactory?.Dispose();
     }

@@ -1,8 +1,8 @@
-﻿using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 
 namespace WinFormsLogger;
 
-internal class DataBaseMSQ : IDisposable
+public class DataBaseMSQ : IDisposable
 {
     public SqliteConnection SqConn { get; private set; }
 
@@ -12,7 +12,17 @@ internal class DataBaseMSQ : IDisposable
         CreateTables();
     }
 
-    public void Dispose() => SqConn.Dispose();
+    public void Dispose()
+    {
+        if (SqConn != null)
+        {
+            if (SqConn.State == System.Data.ConnectionState.Open)
+            {
+                SqConn.Close();
+            }
+            SqConn.Dispose();
+        }
+    }
 
     private static string GetDbPath()
     {
@@ -28,27 +38,26 @@ internal class DataBaseMSQ : IDisposable
         csb.ForeignKeys = true;
         csb.RecursiveTriggers = true;
         this.SqConn = new SqliteConnection(csb.ToString());
+        this.SqConn.Open();
     }
 
     private void CreateTables()
     {
-        ExtcuteQuery(TableStatment.PcStatusT);
-        ExtcuteQuery(TableStatment.ProcessesT);
-        ExtcuteQuery(TableStatment.SchedulesT);
+        ExecuteQuery(TableStatement.PcStatusT);
+        ExecuteQuery(TableStatement.ProcessesT);
+        ExecuteQuery(TableStatement.SchedulesT);
     }
 
-    private void ExtcuteQuery(in string statement)
+    private void ExecuteQuery(string statement)
     {
-        this.SqConn.Open();
-        SqliteCommand commannd = new SqliteCommand(statement, this.SqConn);
-        commannd.ExecuteNonQuery();
-        this.SqConn.Close();
+        using SqliteCommand command = new SqliteCommand(statement, this.SqConn);
+        command.ExecuteNonQuery();
     }
 }
 
-file static class TableStatment
+file static class TableStatement
 {
-    readonly public static string ProcessesT = """
+    public static readonly string ProcessesT = """
         CREATE TABLE IF NOT EXISTS Processes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             process_name TEXT NOT NULL,
@@ -56,14 +65,14 @@ file static class TableStatment
             process_start TIMESTAMP NOT NULL
         );
         """;
-    readonly public static string SchedulesT = """
+    public static readonly string SchedulesT = """
         CREATE TABLE IF NOT EXISTS Schedules (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            pc_status_id REFERENCES PcStatus(Id) ON DELETE CASCADE ON UPDATE CASCADE,
+            pc_status_id INTEGER REFERENCES PcStatus(Id) ON DELETE CASCADE ON UPDATE CASCADE,
             action_time TIMESTAMP NOT NULL
         );
         """;
-    readonly public static string PcStatusT = """
+    public static readonly string PcStatusT = """
         CREATE TABLE IF NOT EXISTS PcStatus (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             status TEXT NOT NULL
