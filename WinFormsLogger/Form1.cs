@@ -9,7 +9,7 @@ public partial class Form1 : Form
     private readonly ILogger<Form1> logger;
     private readonly IProcessRepository processes;
     private readonly IProcessTracer processTracer;
-    private readonly Dictionary<DateTime, string> trackedInstances = new();
+    private readonly Dictionary<DateTime, int> trackedInstances = new();
 
     public Form1(ILogger<Form1> logger, IProcessRepository processes, IProcessTracer processTracer)
     {
@@ -31,7 +31,7 @@ public partial class Form1 : Form
         {
             if (!trackedInstances.ContainsKey(p.ProcessStart))
             {
-                trackedInstances.Add(p.ProcessStart, p.ProcessName ?? "Unknown");
+                trackedInstances.Add(p.ProcessStart, p.Id);
             }
         }
 
@@ -57,7 +57,7 @@ public partial class Form1 : Form
             activeProcess.Duration = 0;
             activeProcess.Id = processes.CreateProcess(activeProcess);
             
-            trackedInstances.Add(activeProcess.ProcessStart, activeProcess.ProcessName ?? "Unknown");
+            trackedInstances.Add(activeProcess.ProcessStart, activeProcess.Id);
 
             logger.Log(LogLevel.Information, $"Новий екземпляр процесу: {activeProcess.ProcessName} | {activeProcess.WindowsName} | Start: {activeProcess.ProcessStart}");
             RefreshDataGridView();
@@ -76,5 +76,24 @@ public partial class Form1 : Form
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
     {
         activeProcessTimer?.Stop();
+
+        try
+        {
+            Process activeProcess = processTracer.GetActiveProcess();
+            if (trackedInstances.TryGetValue(activeProcess.ProcessStart, out int processId))
+            {
+                var processToUpdate = processes.GetProcessById(processId);
+                if (processToUpdate != null)
+                {
+                    processToUpdate.Duration = (int)(DateTime.Now - processToUpdate.ProcessStart).TotalSeconds;
+                    processes.UpdateProcess(processToUpdate);
+                    logger.Log(LogLevel.Information, $"Оновлено тривалість процесу при виході: {processToUpdate.ProcessName} | {processToUpdate.Duration} сек.");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // ignore
+        }
     }
 }
