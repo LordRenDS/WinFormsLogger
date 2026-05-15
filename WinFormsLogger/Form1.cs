@@ -47,24 +47,26 @@ public partial class Form1 : Form
         {
             Process activeProcess = processTracer.GetActiveProcess();
 
-            // Перевіряємо, чи ми вже бачили цей екземпляр процесу
-            if (trackedInstances.ContainsKey(activeProcess.ProcessStart))
+            if (trackedInstances.TryGetValue(activeProcess.ProcessStart, out int existingId))
             {
+                // Процес уже відстежується. Оновлюємо його тривалість.
+                activeProcess.Id = existingId;
+                activeProcess.Duration = (int)(DateTime.Now - activeProcess.ProcessStart).TotalSeconds;
+                processes.UpdateProcess(activeProcess);
                 return;
             }
 
-            // Новий екземпляр процесу
+            // Це новий запуск процесу - створюємо запис
             activeProcess.Duration = 0;
             activeProcess.Id = processes.CreateProcess(activeProcess);
-            
-            trackedInstances.Add(activeProcess.ProcessStart, activeProcess.Id);
+            trackedInstances[activeProcess.ProcessStart] = activeProcess.Id;
 
-            logger.Log(LogLevel.Information, $"Новий екземпляр процесу: {activeProcess.ProcessName} | {activeProcess.WindowsName} | Start: {activeProcess.ProcessStart}");
+            logger.Log(LogLevel.Information, $"Зафіксовано новий запуск: {activeProcess.ProcessName}");
             RefreshDataGridView();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // logger.Log(LogLevel.Trace, $"Моніторинг: {ex.Message}");
+            logger.Log(LogLevel.Error, $"Помилка при моніторингу: {ex.Message}");
         }
     }
 
