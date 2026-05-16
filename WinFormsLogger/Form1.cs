@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System.ComponentModel;
 using WinFormsLogger.DB.Models;
 using WinFormsLogger.DB.Tables;
 using WinFormsLogger.Forms;
@@ -17,7 +18,7 @@ public partial class Form1 : Form
     private readonly IConfigRepository configRepository;
     private readonly IDeviceIdentityService deviceIdentityService;
     private readonly AppSettings _appSettings;
-    private readonly Dictionary<DateTime, int> trackedInstances = new();
+    private readonly BindingList<Process> _processCache = new();
     private bool _isExiting = false;
     private Process? _activeProcess;
     private System.Windows.Forms.Timer _dbSaveTimer;
@@ -57,6 +58,10 @@ public partial class Form1 : Form
         UpdateSyncTimerInterval();
         _syncTimer.Tick += SyncTimer_Tick;
         _syncTimer.Start();
+
+        // Bind DataGridView to cache
+        bindingSource1.DataSource = _processCache;
+        dataGridView1.DataSource = bindingSource1;
     }
 
     private void UpdateSyncTimerInterval()
@@ -74,7 +79,6 @@ public partial class Form1 : Form
                 processes.UpdateProcess(_activeProcess);
             }
             await serverSyncService.SyncAsync();
-            RefreshDataGridView();
         }
         catch (Exception ex)
         {
@@ -100,30 +104,25 @@ public partial class Form1 : Form
             logger.LogInformation($"Using existing Device ID: {config.PcId}");
         }
 
-        // Початкове завантаження кешу для процесів, що вже записані сьогодні
+        // Завантаження процесів за сьогодні у кеш
         var todayProcesses = processes.GetAllProcesses()
-            .Where(p => p.ProcessStart.Date == DateTime.Today);
+            .Where(p => p.ProcessStart.Date == DateTime.Today)
+            .OrderByDescending(p => p.ProcessStart);
         
         foreach (var p in todayProcesses)
         {
-            if (!trackedInstances.ContainsKey(p.ProcessStart))
-            {
-                trackedInstances.Add(p.ProcessStart, p.Id);
-            }
+            _processCache.Add(p);
         }
 
-        bindingSource1.DataSource = processes.GetAllProcesses().ToList();
-        dataGridView1.DataSource = bindingSource1;
-
+        activeProcessTimer.Interval = 1000; // Оновлюємо кожну секунду
         activeProcessTimer.Start();
     }
 
     private void loginToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        using var loginForm = new LoginForm();
+        using var loginForm = new LoginForm(serverSyncService, credentialService);
         if (loginForm.ShowDialog() == DialogResult.OK)
         {
-            credentialService.SaveCredentials(loginForm.Username, loginForm.Password);
             MessageBox.Show("Вхід виконано успішно", "Login", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
@@ -156,40 +155,46 @@ public partial class Form1 : Form
         {
             Process captured = processTracer.GetActiveProcess();
 
+            // Перевіряємо, чи це той самий процес, що й зараз активний
             if (_activeProcess != null && 
                 _activeProcess.ProcessName == captured.ProcessName && 
                 _activeProcess.WindowsName == captured.WindowsName &&
                 _activeProcess.ProcessStart == captured.ProcessStart)
             {
-                // Same process - update duration in memory
-                _activeProcess.Duration = (int)(DateTime.Now - _activeProcess.ProcessStart).TotalSeconds;
-                RefreshDataGridView(); // Update UI
+                // Той самий процес - просто додаємо секунду до Duration у пам'яті
+                // UI оновиться автоматично завдяки INotifyPropertyChanged
+                _activeProcess.Duration++;
                 return;
             }
 
-            // Process changed - save old one if exists
+            // Процес змінився або це перший запуск
+            
+            // Зберігаємо попередній процес у БД
             if (_activeProcess != null)
             {
                 processes.UpdateProcess(_activeProcess);
             }
 
-            // Initialize new active process
-            if (trackedInstances.TryGetValue(captured.ProcessStart, out int existingId))
+            // Шукаємо captured процес у нашому кеші (можливо користувач повернувся до вікна)
+            var existingInCache = _processCache.FirstOrDefault(p => 
+                p.ProcessName == captured.ProcessName && 
+                p.WindowsName == captured.WindowsName &&
+                p.ProcessStart == captured.ProcessStart);
+
+            if (existingInCache != null)
             {
-                captured.Id = existingId;
-                captured.Duration = (int)(DateTime.Now - captured.ProcessStart).TotalSeconds;
-                processes.UpdateProcess(captured);
+                _activeProcess = existingInCache;
             }
             else
             {
+                // Новий процес, якого ще не було сьогодні (або принаймні у кеші)
                 captured.Duration = 0;
                 captured.Id = processes.CreateProcess(captured);
-                trackedInstances[captured.ProcessStart] = captured.Id;
+                _processCache.Insert(0, captured); // Додаємо на початок списку
+                _activeProcess = captured;
             }
 
-            _activeProcess = captured;
-            logger.Log(LogLevel.Information, $"Started tracking new process: {captured.ProcessName}");
-            RefreshDataGridView();
+            logger.Log(LogLevel.Information, $"Active process changed: {captured.ProcessName}");
         }
         catch (Exception ex)
         {
@@ -199,7 +204,9 @@ public partial class Form1 : Form
 
     private void RefreshDataGridView()
     {
-        bindingSource1.DataSource = processes.GetAllProcesses().ToList();
+        // Більше не потрібно завантажувати все з БД, 
+        // BindingList та INotifyPropertyChanged роблять це автоматично.
+        // Але якщо потрібно примусово перечитати (наприклад, після синхронізації), можна очистити і заповнити кеш.
     }
 
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -219,9 +226,8 @@ public partial class Form1 : Form
         {
             if (_activeProcess != null)
             {
-                _activeProcess.Duration = (int)(DateTime.Now - _activeProcess.ProcessStart).TotalSeconds;
                 processes.UpdateProcess(_activeProcess);
-                logger.Log(LogLevel.Information, $"Оновлено тривалість процесу при виході: {_activeProcess.ProcessName} | {_activeProcess.Duration} сек.");
+                logger.Log(LogLevel.Information, $"Збережено тривалість процесу при виході: {_activeProcess.ProcessName} | {_activeProcess.Duration} сек.");
             }
         }
         catch (Exception ex)

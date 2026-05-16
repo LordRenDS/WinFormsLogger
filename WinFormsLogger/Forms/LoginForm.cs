@@ -1,9 +1,12 @@
 using System.ComponentModel;
+using WinFormsLogger.Services;
 
 namespace WinFormsLogger.Forms;
 
 public partial class LoginForm : Form
 {
+    private readonly IServerSyncService _syncService;
+    private readonly ICredentialService _credentialService;
     private IContainer? components = null;
     private Label lblUsername = null!;
     private Label lblPassword = null!;
@@ -15,8 +18,10 @@ public partial class LoginForm : Form
     public string Username => txtUsername.Text;
     public string Password => txtPassword.Text;
 
-    public LoginForm()
+    public LoginForm(IServerSyncService syncService, ICredentialService credentialService)
     {
+        _syncService = syncService;
+        _credentialService = credentialService;
         InitializeComponent();
     }
 
@@ -35,7 +40,7 @@ public partial class LoginForm : Form
         this.lblUsername.Location = new Point(12, 15);
         this.lblUsername.Name = "lblUsername";
         this.lblUsername.Size = new Size(100, 15);
-        this.lblUsername.Text = "Username:";
+        this.lblUsername.Text = "Логін:";
 
         // txtUsername
         this.txtUsername.Location = new Point(12, 33);
@@ -47,7 +52,7 @@ public partial class LoginForm : Form
         this.lblPassword.Location = new Point(12, 65);
         this.lblPassword.Name = "lblPassword";
         this.lblPassword.Size = new Size(100, 15);
-        this.lblPassword.Text = "Password:";
+        this.lblPassword.Text = "Пароль:";
 
         // txtPassword
         this.txtPassword.Location = new Point(12, 83);
@@ -59,7 +64,7 @@ public partial class LoginForm : Form
         this.btnLogin.Location = new Point(116, 120);
         this.btnLogin.Name = "btnLogin";
         this.btnLogin.Size = new Size(75, 23);
-        this.btnLogin.Text = "Login";
+        this.btnLogin.Text = "Увійти";
         this.btnLogin.UseVisualStyleBackColor = true;
         this.btnLogin.Click += btnLogin_Click;
 
@@ -67,7 +72,7 @@ public partial class LoginForm : Form
         this.btnCancel.Location = new Point(197, 120);
         this.btnCancel.Name = "btnCancel";
         this.btnCancel.Size = new Size(75, 23);
-        this.btnCancel.Text = "Cancel";
+        this.btnCancel.Text = "Скасувати";
         this.btnCancel.UseVisualStyleBackColor = true;
         this.btnCancel.Click += btnCancel_Click;
 
@@ -86,21 +91,41 @@ public partial class LoginForm : Form
         this.MinimizeBox = false;
         this.Name = "LoginForm";
         this.StartPosition = FormStartPosition.CenterParent;
-        this.Text = "Login";
+        this.Text = "Авторизація";
         this.ResumeLayout(false);
         this.PerformLayout();
     }
 
-    private void btnLogin_Click(object? sender, EventArgs e)
+    private async void btnLogin_Click(object? sender, EventArgs e)
     {
         if (string.IsNullOrWhiteSpace(txtUsername.Text) || string.IsNullOrWhiteSpace(txtPassword.Text))
         {
-            MessageBox.Show("Please enter username and password.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("Будь ласка, введіть логін та пароль.", "Помилка валідації", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
-        this.DialogResult = DialogResult.OK;
-        this.Close();
+        btnLogin.Enabled = false;
+        btnCancel.Enabled = false;
+        txtUsername.Enabled = false;
+        txtPassword.Enabled = false;
+
+        try
+        {
+            string token = await _syncService.LoginAsync(txtUsername.Text, txtPassword.Text);
+            _credentialService.SaveCredentials(txtUsername.Text, token);
+            
+            this.DialogResult = DialogResult.OK;
+            this.Close();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Помилка входу: {ex.Message}", "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            
+            btnLogin.Enabled = true;
+            btnCancel.Enabled = true;
+            txtUsername.Enabled = true;
+            txtPassword.Enabled = true;
+        }
     }
 
     private void btnCancel_Click(object? sender, EventArgs e)

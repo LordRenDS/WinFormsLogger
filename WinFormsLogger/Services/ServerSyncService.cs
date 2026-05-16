@@ -30,6 +30,21 @@ public class ServerSyncService : IServerSyncService
         _logger = logger;
     }
 
+    public async Task<string> LoginAsync(string username, string password)
+    {
+        _logger.LogInformation("Attempting login for user: {Username}", username);
+        
+        // Mock network delay
+        await Task.Delay(1000);
+
+        // Stub: In a real app, we would call the server here
+        // For now, return a dummy JWT-like token
+        string dummyToken = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(username))}.dummy-signature";
+        
+        _logger.LogInformation("Login successful for user: {Username}", username);
+        return dummyToken;
+    }
+
     public async Task SyncAsync()
     {
         _logger.LogInformation("Starting server synchronization to {ServerUrl}...", _appSettings.ServerUrl);
