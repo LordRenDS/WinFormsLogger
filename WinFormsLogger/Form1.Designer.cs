@@ -36,7 +36,7 @@
             activeProcessTimer = new System.Windows.Forms.Timer(components);
             splitContainer1 = new SplitContainer();
             dataGridView1 = new DataGridView();
-            dataGridView2 = new DataGridView();
+            lstServerLogs = new ListBox();
             Id = new DataGridViewTextBoxColumn();
             ProcessName = new DataGridViewTextBoxColumn();
             WindowsName = new DataGridViewTextBoxColumn();
@@ -57,7 +57,6 @@
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             menuStrip1.SuspendLayout();
             contextMenuStrip1.SuspendLayout();
             SuspendLayout();
@@ -81,7 +80,7 @@
             // 
             // splitContainer1.Panel2
             // 
-            splitContainer1.Panel2.Controls.Add(dataGridView2);
+            splitContainer1.Panel2.Controls.Add(lstServerLogs);
             splitContainer1.Size = new Size(688, 302);
             splitContainer1.SplitterDistance = 183;
             splitContainer1.SplitterWidth = 6;
@@ -108,19 +107,14 @@
             dataGridView1.Size = new Size(688, 183);
             dataGridView1.TabIndex = 0;
             // 
-            // dataGridView2
+            // lstServerLogs
             // 
-            dataGridView2.AllowUserToAddRows = false;
-            dataGridView2.AllowUserToDeleteRows = false;
-            dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            dataGridView2.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllHeaders;
-            dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView2.Dock = DockStyle.Fill;
-            dataGridView2.Location = new Point(0, 0);
-            dataGridView2.Name = "dataGridView2";
-            dataGridView2.ReadOnly = true;
-            dataGridView2.Size = new Size(688, 113);
-            dataGridView2.TabIndex = 1;
+            lstServerLogs.Dock = DockStyle.Fill;
+            lstServerLogs.IntegralHeight = false;
+            lstServerLogs.Location = new Point(0, 0);
+            lstServerLogs.Name = "lstServerLogs";
+            lstServerLogs.Size = new Size(688, 113);
+            lstServerLogs.TabIndex = 1;
             // 
             // Id
             // 
@@ -260,7 +254,6 @@
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
-            ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             menuStrip1.ResumeLayout(false);
             menuStrip1.PerformLayout();
             contextMenuStrip1.ResumeLayout(false);
@@ -272,7 +265,7 @@
 
         private SplitContainer splitContainer1;
         private DataGridView dataGridView1;
-        private DataGridView dataGridView2;
+        private ListBox lstServerLogs;
         private DataGridViewTextBoxColumn Id;
         private DataGridViewTextBoxColumn ProcessName;
         private DataGridViewTextBoxColumn WindowsName;
