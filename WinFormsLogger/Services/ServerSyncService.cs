@@ -11,6 +11,7 @@ public class ServerSyncService : IServerSyncService
     private readonly IScheduleRepository _scheduleRepository;
     private readonly IDeviceIdentityService _deviceIdentityService;
     private readonly ICredentialService _credentialService;
+    private readonly AppSettings _appSettings;
     private readonly ILogger<ServerSyncService> _logger;
 
     public ServerSyncService(
@@ -18,18 +19,20 @@ public class ServerSyncService : IServerSyncService
         IScheduleRepository scheduleRepository,
         IDeviceIdentityService deviceIdentityService,
         ICredentialService credentialService,
+        AppSettings appSettings,
         ILogger<ServerSyncService> logger)
     {
         _processRepository = processRepository;
         _scheduleRepository = scheduleRepository;
         _deviceIdentityService = deviceIdentityService;
         _credentialService = credentialService;
+        _appSettings = appSettings;
         _logger = logger;
     }
 
     public async Task SyncAsync()
     {
-        _logger.LogInformation("Starting server synchronization...");
+        _logger.LogInformation("Starting server synchronization to {ServerUrl}...", _appSettings.ServerUrl);
 
         try
         {
@@ -43,12 +46,19 @@ public class ServerSyncService : IServerSyncService
             }
 
             var credentials = _credentialService.GetCredentials();
-            var username = credentials?.username ?? "Unknown";
+            var token = credentials?.password; // Token is stored in the password field
+            var deviceId = _deviceIdentityService.GetDeviceId();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogWarning("Synchronization skipped: No authentication token found. Please login.");
+                return;
+            }
 
             var syncPackage = new
             {
-                DeviceId = _deviceIdentityService.GetDeviceId(),
-                Username = username,
+                DeviceId = deviceId,
+                Username = credentials?.username,
                 Processes = unsyncedProcesses.Select(p => new
                 {
                     p.ProcessName,
@@ -65,6 +75,8 @@ public class ServerSyncService : IServerSyncService
 
             string json = JsonSerializer.Serialize(syncPackage, new JsonSerializerOptions { WriteIndented = true });
             
+            _logger.LogInformation("Using Authorization: Bearer {TokenPrefix}...", token.Substring(0, Math.Min(token.Length, 8)));
+            _logger.LogInformation("Using X-Device-Id: {DeviceId}", deviceId);
             _logger.LogInformation("Generated Sync JSON:\n{Json}", json);
 
             // Stub: simulate network request

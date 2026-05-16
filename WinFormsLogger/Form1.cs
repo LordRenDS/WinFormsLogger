@@ -21,6 +21,7 @@ public partial class Form1 : Form
     private bool _isExiting = false;
     private Process? _activeProcess;
     private System.Windows.Forms.Timer _dbSaveTimer;
+    private System.Windows.Forms.Timer _syncTimer;
 
     public Form1(
         ILogger<Form1> logger, 
@@ -51,6 +52,34 @@ public partial class Form1 : Form
         _dbSaveTimer.Interval = 5 * 60 * 1000; // 5 minutes
         _dbSaveTimer.Tick += DbSaveTimer_Tick;
         _dbSaveTimer.Start();
+
+        _syncTimer = new System.Windows.Forms.Timer();
+        UpdateSyncTimerInterval();
+        _syncTimer.Tick += SyncTimer_Tick;
+        _syncTimer.Start();
+    }
+
+    private void UpdateSyncTimerInterval()
+    {
+        _syncTimer.Interval = Math.Max(1, _appSettings.SyncIntervalMinutes) * 60 * 1000;
+        logger.LogInformation("Sync timer interval set to {Interval} minutes", _appSettings.SyncIntervalMinutes);
+    }
+
+    private async void SyncTimer_Tick(object? sender, EventArgs e)
+    {
+        try
+        {
+            if (_activeProcess != null)
+            {
+                processes.UpdateProcess(_activeProcess);
+            }
+            await serverSyncService.SyncAsync();
+            RefreshDataGridView();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Automated background sync failed");
+        }
     }
 
     private void Form1_Load(object sender, EventArgs e)
@@ -255,6 +284,7 @@ public partial class Form1 : Form
         {
             logger.LogInformation("Settings updated: ServerUrl={ServerUrl}, SyncInterval={SyncInterval}",
                 _appSettings.ServerUrl, _appSettings.SyncIntervalMinutes);
+            UpdateSyncTimerInterval();
         }
     }
 }
