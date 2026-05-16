@@ -18,6 +18,8 @@ public partial class Form1 : Form
     private readonly IDeviceIdentityService deviceIdentityService;
     private readonly Dictionary<DateTime, int> trackedInstances = new();
     private bool _isExiting = false;
+    private Process? _activeProcess;
+    private System.Windows.Forms.Timer _dbSaveTimer;
 
     public Form1(
         ILogger<Form1> logger, 
@@ -41,6 +43,11 @@ public partial class Form1 : Form
         
         // Ensure the tray icon uses the form's icon
         this.notifyIcon1.Icon = this.Icon;
+
+        _dbSaveTimer = new System.Windows.Forms.Timer();
+        _dbSaveTimer.Interval = 5 * 60 * 1000; // 5 minutes
+        _dbSaveTimer.Tick += DbSaveTimer_Tick;
+        _dbSaveTimer.Start();
     }
 
     private void Form1_Load(object sender, EventArgs e)
@@ -95,32 +102,66 @@ public partial class Form1 : Form
         MessageBox.Show("Вихід виконано", "Logout", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
+    private void DbSaveTimer_Tick(object? sender, EventArgs e)
+    {
+        if (_activeProcess != null)
+        {
+            try
+            {
+                processes.UpdateProcess(_activeProcess);
+                logger.LogInformation($"Periodic save: Updated duration for {_activeProcess.ProcessName}");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error during periodic database save");
+            }
+        }
+    }
+
     private void ActiveProcessTimer_Tick(object? sender, EventArgs e)
     {
         try
         {
-            Process activeProcess = processTracer.GetActiveProcess();
+            Process captured = processTracer.GetActiveProcess();
 
-            if (trackedInstances.TryGetValue(activeProcess.ProcessStart, out int existingId))
+            if (_activeProcess != null && 
+                _activeProcess.ProcessName == captured.ProcessName && 
+                _activeProcess.WindowsName == captured.WindowsName &&
+                _activeProcess.ProcessStart == captured.ProcessStart)
             {
-                // Процес уже відстежується. Оновлюємо його тривалість.
-                activeProcess.Id = existingId;
-                activeProcess.Duration = (int)(DateTime.Now - activeProcess.ProcessStart).TotalSeconds;
-                processes.UpdateProcess(activeProcess);
+                // Same process - update duration in memory
+                _activeProcess.Duration = (int)(DateTime.Now - _activeProcess.ProcessStart).TotalSeconds;
+                RefreshDataGridView(); // Update UI
                 return;
             }
 
-            // Це новий запуск процесу - створюємо запис
-            activeProcess.Duration = 0;
-            activeProcess.Id = processes.CreateProcess(activeProcess);
-            trackedInstances[activeProcess.ProcessStart] = activeProcess.Id;
+            // Process changed - save old one if exists
+            if (_activeProcess != null)
+            {
+                processes.UpdateProcess(_activeProcess);
+            }
 
-            logger.Log(LogLevel.Information, $"Зафіксовано новий запуск: {activeProcess.ProcessName}");
+            // Initialize new active process
+            if (trackedInstances.TryGetValue(captured.ProcessStart, out int existingId))
+            {
+                captured.Id = existingId;
+                captured.Duration = (int)(DateTime.Now - captured.ProcessStart).TotalSeconds;
+                processes.UpdateProcess(captured);
+            }
+            else
+            {
+                captured.Duration = 0;
+                captured.Id = processes.CreateProcess(captured);
+                trackedInstances[captured.ProcessStart] = captured.Id;
+            }
+
+            _activeProcess = captured;
+            logger.Log(LogLevel.Information, $"Started tracking new process: {captured.ProcessName}");
             RefreshDataGridView();
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Error, $"Помилка при моніторингу: {ex.Message}");
+            logger.Log(LogLevel.Error, $"Monitoring error: {ex.Message}");
         }
     }
 
@@ -140,24 +181,20 @@ public partial class Form1 : Form
         }
 
         activeProcessTimer?.Stop();
+        _dbSaveTimer?.Stop();
 
         try
         {
-            Process activeProcess = processTracer.GetActiveProcess();
-            if (trackedInstances.TryGetValue(activeProcess.ProcessStart, out int processId))
+            if (_activeProcess != null)
             {
-                var processToUpdate = processes.GetProcessById(processId);
-                if (processToUpdate != null)
-                {
-                    processToUpdate.Duration = (int)(DateTime.Now - processToUpdate.ProcessStart).TotalSeconds;
-                    processes.UpdateProcess(processToUpdate);
-                    logger.Log(LogLevel.Information, $"Оновлено тривалість процесу при виході: {processToUpdate.ProcessName} | {processToUpdate.Duration} сек.");
-                }
+                _activeProcess.Duration = (int)(DateTime.Now - _activeProcess.ProcessStart).TotalSeconds;
+                processes.UpdateProcess(_activeProcess);
+                logger.Log(LogLevel.Information, $"Оновлено тривалість процесу при виході: {_activeProcess.ProcessName} | {_activeProcess.Duration} сек.");
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // ignore
+            logger.LogError(ex, "Error saving active process during form closing");
         }
     }
 
@@ -189,6 +226,10 @@ public partial class Form1 : Form
         syncNowToolStripMenuItem.Enabled = false;
         try
         {
+            if (_activeProcess != null)
+            {
+                processes.UpdateProcess(_activeProcess);
+            }
             await serverSyncService.SyncAsync();
             MessageBox.Show("Синхронізація завершена", "Sync", MessageBoxButtons.OK, MessageBoxIcon.Information);
             RefreshDataGridView();
