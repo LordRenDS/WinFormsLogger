@@ -13,12 +13,14 @@ public partial class SettingsForm : Form
         
         txtServerUrl.Text = _settings.ServerUrl;
         numSyncInterval.Value = _settings.SyncIntervalMinutes;
+        chkShowLogs.Checked = _settings.ShowServerLogs;
     }
 
     private void btnSave_Click(object sender, EventArgs e)
     {
         _settings.ServerUrl = txtServerUrl.Text;
         _settings.SyncIntervalMinutes = (int)numSyncInterval.Value;
+        _settings.ShowServerLogs = chkShowLogs.Checked;
         _settings.Save();
         
         DialogResult = DialogResult.OK;

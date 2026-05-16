@@ -21,6 +21,7 @@ namespace WinFormsLogger.Forms
             numSyncInterval = new NumericUpDown();
             btnSave = new Button();
             btnCancel = new Button();
+            chkShowLogs = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)numSyncInterval).BeginInit();
             SuspendLayout();
             // 
@@ -61,23 +62,33 @@ namespace WinFormsLogger.Forms
             // 
             // btnSave
             // 
-            btnSave.Location = new Point(216, 80);
+            btnSave.Location = new Point(216, 110);
             btnSave.Name = "btnSave";
             btnSave.Size = new Size(75, 23);
-            btnSave.TabIndex = 4;
+            btnSave.TabIndex = 5;
             btnSave.Text = "Save";
             btnSave.UseVisualStyleBackColor = true;
             btnSave.Click += btnSave_Click;
             // 
             // btnCancel
             // 
-            btnCancel.Location = new Point(297, 80);
+            btnCancel.Location = new Point(297, 110);
             btnCancel.Name = "btnCancel";
             btnCancel.Size = new Size(75, 23);
-            btnCancel.TabIndex = 5;
+            btnCancel.TabIndex = 6;
             btnCancel.Text = "Cancel";
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += btnCancel_Click;
+            // 
+            // chkShowLogs
+            // 
+            chkShowLogs.AutoSize = true;
+            chkShowLogs.Location = new Point(130, 75);
+            chkShowLogs.Name = "chkShowLogs";
+            chkShowLogs.Size = new Size(119, 19);
+            chkShowLogs.TabIndex = 4;
+            chkShowLogs.Text = "Show Server Logs";
+            chkShowLogs.UseVisualStyleBackColor = true;
             // 
             // SettingsForm
             // 
@@ -85,7 +96,8 @@ namespace WinFormsLogger.Forms
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             CancelButton = btnCancel;
-            ClientSize = new Size(384, 115);
+            ClientSize = new Size(384, 145);
+            Controls.Add(chkShowLogs);
             Controls.Add(btnCancel);
             Controls.Add(btnSave);
             Controls.Add(numSyncInterval);
@@ -109,5 +121,6 @@ namespace WinFormsLogger.Forms
         private NumericUpDown numSyncInterval;
         private Button btnSave;
         private Button btnCancel;
+        private CheckBox chkShowLogs;
     }
 }

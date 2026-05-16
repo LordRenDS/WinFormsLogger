@@ -19,4 +19,12 @@ public class AppSettings : ApplicationSettingsBase
         get => (int)this[nameof(SyncIntervalMinutes)];
         set => this[nameof(SyncIntervalMinutes)] = value;
     }
+
+    [UserScopedSetting]
+    [DefaultSettingValue("true")]
+    public bool ShowServerLogs
+    {
+        get => (bool)this[nameof(ShowServerLogs)];
+        set => this[nameof(ShowServerLogs)] = value;
+    }
 }
