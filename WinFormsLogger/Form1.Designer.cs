@@ -41,6 +41,8 @@
             ProcessName = new DataGridViewTextBoxColumn();
             WindowsName = new DataGridViewTextBoxColumn();
             ProcessStart = new DataGridViewTextBoxColumn();
+            Duration = new DataGridViewTextBoxColumn();
+            IsSynced = new DataGridViewTextBoxColumn();
             menuStrip1 = new MenuStrip();
             fileToolStripMenuItem = new ToolStripMenuItem();
             exitToolStripMenuItem1 = new ToolStripMenuItem();
@@ -94,8 +96,9 @@
             // 
             dataGridView1.AllowUserToAddRows = false;
             dataGridView1.AllowUserToDeleteRows = false;
+            dataGridView1.AllowUserToResizeColumns = true;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Id, ProcessName, WindowsName, ProcessStart });
+            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { Id, ProcessName, WindowsName, ProcessStart, Duration, IsSynced });
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = SystemColors.Window;
             dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
@@ -127,25 +130,22 @@
             Id.HeaderText = "ID";
             Id.Name = "Id";
             Id.ReadOnly = true;
-            Id.Width = 43;
             // 
             // ProcessName
             // 
             ProcessName.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
             ProcessName.DataPropertyName = "ProcessName";
-            ProcessName.HeaderText = "Назва процессу";
+            ProcessName.HeaderText = "Процес";
             ProcessName.Name = "ProcessName";
             ProcessName.ReadOnly = true;
-            ProcessName.Width = 109;
             // 
             // WindowsName
             // 
-            WindowsName.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            WindowsName.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             WindowsName.DataPropertyName = "WindowsName";
-            WindowsName.HeaderText = "Назва Вікна";
+            WindowsName.HeaderText = "Заголовок вікна";
             WindowsName.Name = "WindowsName";
             WindowsName.ReadOnly = true;
-            WindowsName.Width = 88;
             // 
             // ProcessStart
             // 
@@ -154,10 +154,25 @@
             dataGridViewCellStyle1.Format = "G";
             dataGridViewCellStyle1.NullValue = null;
             ProcessStart.DefaultCellStyle = dataGridViewCellStyle1;
-            ProcessStart.HeaderText = "Початок Процессу";
+            ProcessStart.HeaderText = "Початок";
             ProcessStart.Name = "ProcessStart";
             ProcessStart.ReadOnly = true;
-            ProcessStart.Width = 124;
+            // 
+            // Duration
+            // 
+            Duration.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
+            Duration.DataPropertyName = "Duration";
+            Duration.HeaderText = "Тривалість (с)";
+            Duration.Name = "Duration";
+            Duration.ReadOnly = true;
+            // 
+            // IsSynced
+            // 
+            IsSynced.AutoSizeMode = DataGridViewAutoSizeColumnMode.ColumnHeader;
+            IsSynced.DataPropertyName = "IsSynced";
+            IsSynced.HeaderText = "Синхр.";
+            IsSynced.Name = "IsSynced";
+            IsSynced.ReadOnly = true;
             // 
             // menuStrip1
             // 
@@ -303,6 +318,8 @@
         private DataGridViewTextBoxColumn ProcessName;
         private DataGridViewTextBoxColumn WindowsName;
         private DataGridViewTextBoxColumn ProcessStart;
+        private DataGridViewTextBoxColumn Duration;
+        private DataGridViewTextBoxColumn IsSynced;
         private BindingSource bindingSource1;
         private System.Windows.Forms.Timer activeProcessTimer;
         private MenuStrip menuStrip1;
