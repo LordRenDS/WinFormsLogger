@@ -41,6 +41,7 @@ internal static class Program
         services.AddSingleton<IDeviceIdentityService, DeviceIdentityService>();
         services.AddSingleton<ICredentialService, CredentialService>();
         services.AddSingleton<IServerSyncService, ServerSyncService>();
+        services.AddSingleton<AppSettings>();
         services.AddTransient<Form1>();
     }
 }

@@ -16,6 +16,7 @@ public partial class Form1 : Form
     private readonly IServerSyncService serverSyncService;
     private readonly IConfigRepository configRepository;
     private readonly IDeviceIdentityService deviceIdentityService;
+    private readonly AppSettings _appSettings;
     private readonly Dictionary<DateTime, int> trackedInstances = new();
     private bool _isExiting = false;
     private Process? _activeProcess;
@@ -29,7 +30,8 @@ public partial class Form1 : Form
         ISystemEventWatcher systemEventWatcher,
         IServerSyncService serverSyncService,
         IConfigRepository configRepository,
-        IDeviceIdentityService deviceIdentityService)
+        IDeviceIdentityService deviceIdentityService,
+        AppSettings appSettings)
     {
         InitializeComponent();
         this.logger = logger;
@@ -40,6 +42,7 @@ public partial class Form1 : Form
         this.serverSyncService = serverSyncService;
         this.configRepository = configRepository;
         this.deviceIdentityService = deviceIdentityService;
+        this._appSettings = appSettings;
         
         // Ensure the tray icon uses the form's icon
         this.notifyIcon1.Icon = this.Icon;
@@ -242,6 +245,16 @@ public partial class Form1 : Form
         finally
         {
             syncNowToolStripMenuItem.Enabled = true;
+        }
+    }
+
+    private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        using var settingsForm = new SettingsForm(_appSettings);
+        if (settingsForm.ShowDialog() == DialogResult.OK)
+        {
+            logger.LogInformation("Settings updated: ServerUrl={ServerUrl}, SyncInterval={SyncInterval}",
+                _appSettings.ServerUrl, _appSettings.SyncIntervalMinutes);
         }
     }
 }
