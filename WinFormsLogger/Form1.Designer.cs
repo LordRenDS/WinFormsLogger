@@ -42,6 +42,10 @@
             WindowsName = new DataGridViewTextBoxColumn();
             ProcessStart = new DataGridViewTextBoxColumn();
             menuStrip1 = new MenuStrip();
+            fileToolStripMenuItem = new ToolStripMenuItem();
+            exitToolStripMenuItem1 = new ToolStripMenuItem();
+            viewToolStripMenuItem = new ToolStripMenuItem();
+            showLogsToolStripMenuItem = new ToolStripMenuItem();
             accountToolStripMenuItem = new ToolStripMenuItem();
             loginToolStripMenuItem = new ToolStripMenuItem();
             logoutToolStripMenuItem = new ToolStripMenuItem();
@@ -157,12 +161,41 @@
             // 
             // menuStrip1
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { accountToolStripMenuItem, syncToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { fileToolStripMenuItem, viewToolStripMenuItem, accountToolStripMenuItem, syncToolStripMenuItem });
             menuStrip1.Location = new Point(6, 6);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(688, 24);
             menuStrip1.TabIndex = 1;
             menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            fileToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { exitToolStripMenuItem1 });
+            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            fileToolStripMenuItem.Size = new Size(37, 20);
+            fileToolStripMenuItem.Text = "&File";
+            // 
+            // exitToolStripMenuItem1
+            // 
+            exitToolStripMenuItem1.Name = "exitToolStripMenuItem1";
+            exitToolStripMenuItem1.Size = new Size(180, 22);
+            exitToolStripMenuItem1.Text = "E&xit";
+            exitToolStripMenuItem1.Click += exitToolStripMenuItem1_Click;
+            // 
+            // viewToolStripMenuItem
+            // 
+            viewToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { showLogsToolStripMenuItem });
+            viewToolStripMenuItem.Name = "viewToolStripMenuItem";
+            viewToolStripMenuItem.Size = new Size(44, 20);
+            viewToolStripMenuItem.Text = "&View";
+            // 
+            // showLogsToolStripMenuItem
+            // 
+            showLogsToolStripMenuItem.CheckOnClick = true;
+            showLogsToolStripMenuItem.Name = "showLogsToolStripMenuItem";
+            showLogsToolStripMenuItem.Size = new Size(180, 22);
+            showLogsToolStripMenuItem.Text = "Server &Logs";
+            showLogsToolStripMenuItem.Click += showLogsToolStripMenuItem_Click;
             // 
             // accountToolStripMenuItem
             // 
@@ -273,6 +306,10 @@
         private BindingSource bindingSource1;
         private System.Windows.Forms.Timer activeProcessTimer;
         private MenuStrip menuStrip1;
+        private ToolStripMenuItem fileToolStripMenuItem;
+        private ToolStripMenuItem exitToolStripMenuItem1;
+        private ToolStripMenuItem viewToolStripMenuItem;
+        private ToolStripMenuItem showLogsToolStripMenuItem;
         private ToolStripMenuItem accountToolStripMenuItem;
         private ToolStripMenuItem loginToolStripMenuItem;
         private ToolStripMenuItem logoutToolStripMenuItem;

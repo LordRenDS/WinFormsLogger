@@ -293,4 +293,14 @@ public partial class Form1 : Form
             UpdateSyncTimerInterval();
         }
     }
+
+    private void exitToolStripMenuItem1_Click(object sender, EventArgs e)
+    {
+        exitToolStripMenuItem_Click(sender, e);
+    }
+
+    private void showLogsToolStripMenuItem_Click(object sender, EventArgs e)
+    {
+        splitContainer1.Panel2Collapsed = !showLogsToolStripMenuItem.Checked;
+    }
 }
