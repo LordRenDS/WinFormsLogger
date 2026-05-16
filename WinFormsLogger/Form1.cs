@@ -62,6 +62,26 @@ public partial class Form1 : Form
         // Bind DataGridView to cache
         bindingSource1.DataSource = _processCache;
         dataGridView1.DataSource = bindingSource1;
+
+        // Initialize log panel visibility
+        showLogsToolStripMenuItem.Checked = _appSettings.ShowServerLogs;
+        splitContainer1.Panel2Collapsed = !_appSettings.ShowServerLogs;
+    }
+
+    private void LogServerEvent(string message)
+    {
+        if (lstServerLogs.InvokeRequired)
+        {
+            lstServerLogs.Invoke(new Action(() => LogServerEvent(message)));
+            return;
+        }
+
+        string logEntry = $"[{DateTime.Now:HH:mm:ss}] {message}";
+        lstServerLogs.Items.Add(logEntry);
+
+        // Scroll to the bottom
+        lstServerLogs.SelectedIndex = lstServerLogs.Items.Count - 1;
+        lstServerLogs.ClearSelected();
     }
 
     private void UpdateSyncTimerInterval()
@@ -74,15 +94,18 @@ public partial class Form1 : Form
     {
         try
         {
+            LogServerEvent("Background sync started...");
             if (_activeProcess != null)
             {
                 processes.UpdateProcess(_activeProcess);
             }
             await serverSyncService.SyncAsync();
+            LogServerEvent("Background sync completed.");
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Automated background sync failed");
+            LogServerEvent($"Background sync failed: {ex.Message}");
         }
     }
 
@@ -264,17 +287,20 @@ public partial class Form1 : Form
         syncNowToolStripMenuItem.Enabled = false;
         try
         {
+            LogServerEvent("Manual sync started...");
             if (_activeProcess != null)
             {
                 processes.UpdateProcess(_activeProcess);
             }
             await serverSyncService.SyncAsync();
+            LogServerEvent("Manual sync completed.");
             MessageBox.Show("Синхронізація завершена", "Sync", MessageBoxButtons.OK, MessageBoxIcon.Information);
             RefreshDataGridView();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Manual sync failed");
+            LogServerEvent($"Manual sync failed: {ex.Message}");
             MessageBox.Show($"Помилка синхронізації: {ex.Message}", "Sync Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
@@ -302,5 +328,7 @@ public partial class Form1 : Form
     private void showLogsToolStripMenuItem_Click(object sender, EventArgs e)
     {
         splitContainer1.Panel2Collapsed = !showLogsToolStripMenuItem.Checked;
+        _appSettings.ShowServerLogs = showLogsToolStripMenuItem.Checked;
+        _appSettings.Save();
     }
 }
