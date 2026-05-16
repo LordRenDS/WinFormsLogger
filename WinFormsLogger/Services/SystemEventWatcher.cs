@@ -30,7 +30,27 @@ public class SystemEventWatcher : ISystemEventWatcher, IDisposable
         SystemEvents.SessionSwitch += OnSessionSwitch;
         SystemEvents.SessionEnding += OnSessionEnding;
         
-        LogStatus("PowerOn");
+        // Track PowerOn based on system boot time
+        try
+        {
+            DateTime bootTime = DateTime.Now - TimeSpan.FromMilliseconds(Environment.TickCount64);
+            if (_statusMap.TryGetValue("PowerOn", out int powerOnId))
+            {
+                // Use 5 minute tolerance to avoid duplicate entries for the same boot
+                if (!_scheduleRepository.Exists(powerOnId, bootTime, TimeSpan.FromMinutes(5)))
+                {
+                    LogStatusAtTime("PowerOn", bootTime);
+                }
+                else
+                {
+                    _logger.LogInformation("PowerOn event for current boot already exists. Skipping.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error tracking boot time PowerOn event");
+        }
     }
 
     private void LoadStatusMap()
@@ -93,6 +113,32 @@ public class SystemEventWatcher : ISystemEventWatcher, IDisposable
                 };
                 _scheduleRepository.Create(schedule);
                 _logger.LogInformation($"Logged PC status: {statusName}");
+            }
+            else
+            {
+                _logger.LogWarning($"Status '{statusName}' not found in database.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error logging status: {statusName}");
+        }
+    }
+
+    private void LogStatusAtTime(string statusName, DateTime time)
+    {
+        try
+        {
+            if (_statusMap.TryGetValue(statusName, out int statusId))
+            {
+                var schedule = new Schedule
+                {
+                    PcStatusId = statusId,
+                    Timestamp = time,
+                    IsSynced = false
+                };
+                _scheduleRepository.Create(schedule);
+                _logger.LogInformation($"Logged PC status: {statusName} at {time}");
             }
             else
             {

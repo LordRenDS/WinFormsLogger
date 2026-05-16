@@ -90,4 +90,17 @@ internal class SchedulesT : IScheduleRepository
             return command.ExecuteNonQuery();
         }
     }
+
+    public bool Exists(int statusId, DateTime timestamp, TimeSpan tolerance)
+    {
+        lock (_dataBase.DbLock)
+        {
+            string statement = "SELECT COUNT(*) FROM Schedules WHERE pc_status_id = @StatusId AND timestamp >= @Start AND timestamp <= @End";
+            using var command = new SqliteCommand(statement, _dataBase.SqConn);
+            command.Parameters.AddWithValue("@StatusId", statusId);
+            command.Parameters.AddWithValue("@Start", timestamp - tolerance);
+            command.Parameters.AddWithValue("@End", timestamp + tolerance);
+            return Convert.ToInt32(command.ExecuteScalar()) > 0;
+        }
+    }
 }

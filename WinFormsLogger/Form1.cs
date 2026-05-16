@@ -14,6 +14,8 @@ public partial class Form1 : Form
     private readonly ICredentialService credentialService;
     private readonly ISystemEventWatcher systemEventWatcher;
     private readonly IServerSyncService serverSyncService;
+    private readonly IConfigRepository configRepository;
+    private readonly IDeviceIdentityService deviceIdentityService;
     private readonly Dictionary<DateTime, int> trackedInstances = new();
     private bool _isExiting = false;
 
@@ -23,7 +25,9 @@ public partial class Form1 : Form
         IProcessTracer processTracer, 
         ICredentialService credentialService, 
         ISystemEventWatcher systemEventWatcher,
-        IServerSyncService serverSyncService)
+        IServerSyncService serverSyncService,
+        IConfigRepository configRepository,
+        IDeviceIdentityService deviceIdentityService)
     {
         InitializeComponent();
         this.logger = logger;
@@ -32,6 +36,8 @@ public partial class Form1 : Form
         this.credentialService = credentialService;
         this.systemEventWatcher = systemEventWatcher;
         this.serverSyncService = serverSyncService;
+        this.configRepository = configRepository;
+        this.deviceIdentityService = deviceIdentityService;
         
         // Ensure the tray icon uses the form's icon
         this.notifyIcon1.Icon = this.Icon;
@@ -41,6 +47,19 @@ public partial class Form1 : Form
     {
         logger.Log(LogLevel.Information, "Form1_Load");
         systemEventWatcher.Start();
+
+        // Initialize Device ID if not set
+        var config = configRepository.GetConfig();
+        if (config == null || string.IsNullOrEmpty(config.PcId))
+        {
+            var deviceId = deviceIdentityService.GetDeviceId();
+            configRepository.SaveConfig(new Config { PcId = deviceId });
+            logger.LogInformation($"Initialized Device ID: {deviceId}");
+        }
+        else
+        {
+            logger.LogInformation($"Using existing Device ID: {config.PcId}");
+        }
 
         // Початкове завантаження кешу для процесів, що вже записані сьогодні
         var todayProcesses = processes.GetAllProcesses()
