@@ -5,7 +5,7 @@ namespace WinFormsLogger.Services;
 public class AppSettings : ApplicationSettingsBase
 {
     [UserScopedSetting]
-    [DefaultSettingValue("https://api.example.com/sync")]
+    [DefaultSettingValue("http://localhost:8080")]
     public string ServerUrl
     {
         get => (string)this[nameof(ServerUrl)];

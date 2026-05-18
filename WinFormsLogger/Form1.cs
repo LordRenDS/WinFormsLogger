@@ -97,10 +97,21 @@ public partial class Form1 : Form
             LogServerEvent("Background sync started...");
             if (_activeProcess != null)
             {
+                _activeProcess.IsSynced = false;
                 processes.UpdateProcess(_activeProcess);
             }
             await serverSyncService.SyncAsync();
             LogServerEvent("Background sync completed.");
+
+            // Update UI
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(UpdateCacheSyncStatus));
+            }
+            else
+            {
+                UpdateCacheSyncStatus();
+            }
         }
         catch (Exception ex)
         {
@@ -162,8 +173,9 @@ public partial class Form1 : Form
         {
             try
             {
+                _activeProcess.IsSynced = false; // Mark as unsynced since duration changed
                 processes.UpdateProcess(_activeProcess);
-                logger.LogInformation($"Periodic save: Updated duration for {_activeProcess.ProcessName}");
+                logger.LogInformation($"Periodic save: Updated duration and reset sync status for {_activeProcess.ProcessName}");
             }
             catch (Exception ex)
             {
@@ -284,18 +296,28 @@ public partial class Form1 : Form
 
     private async void syncNowToolStripMenuItem_Click(object sender, EventArgs e)
     {
+        if (credentialService.GetCredentials() == null)
+        {
+            MessageBox.Show("Будь ласка, спочатку виконайте вхід у систему (Меню -> Login), щоб мати змогу синхронізувати дані з сервером.", "Синхронізація", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
         syncNowToolStripMenuItem.Enabled = false;
         try
         {
             LogServerEvent("Manual sync started...");
             if (_activeProcess != null)
             {
+                _activeProcess.IsSynced = false; // Mark as unsynced to ensure incremental sync picks it up
                 processes.UpdateProcess(_activeProcess);
             }
             await serverSyncService.SyncAsync();
             LogServerEvent("Manual sync completed.");
+            
+            // Update IsSynced status in cache from DB
+            UpdateCacheSyncStatus();
+            
             MessageBox.Show("Синхронізація завершена", "Sync", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            RefreshDataGridView();
         }
         catch (Exception ex)
         {
@@ -306,6 +328,22 @@ public partial class Form1 : Form
         finally
         {
             syncNowToolStripMenuItem.Enabled = true;
+        }
+    }
+
+    private void UpdateCacheSyncStatus()
+    {
+        // Get all processes from DB for today to see their current sync status
+        var dbProcesses = processes.GetAllProcesses()
+            .Where(p => p.ProcessStart.Date == DateTime.Today)
+            .ToDictionary(p => p.Id, p => p.IsSynced);
+
+        foreach (var process in _processCache)
+        {
+            if (dbProcesses.TryGetValue(process.Id, out bool isSynced))
+            {
+                process.IsSynced = isSynced;
+            }
         }
     }
 
