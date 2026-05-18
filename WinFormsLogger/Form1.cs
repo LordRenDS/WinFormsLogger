@@ -63,8 +63,11 @@ public partial class Form1 : Form
         bindingSource1.DataSource = _processCache;
         dataGridView1.DataSource = bindingSource1;
 
-        // Initialize log panel visibility
-        showLogsToolStripMenuItem.Checked = _appSettings.ShowServerLogs;
+        ApplyUISettings();
+    }
+
+    private void ApplyUISettings()
+    {
         splitContainer1.Panel2Collapsed = !_appSettings.ShowServerLogs;
     }
 
@@ -100,8 +103,17 @@ public partial class Form1 : Form
                 _activeProcess.IsSynced = false;
                 processes.UpdateProcess(_activeProcess);
             }
-            await serverSyncService.SyncAsync();
-            LogServerEvent("Background sync completed.");
+            var status = await serverSyncService.SyncAsync();
+            string statusMsg = status switch
+            {
+                SyncStatus.Success => "Background sync completed.",
+                SyncStatus.NoUnsyncedData => "Background sync: No data to sync.",
+                SyncStatus.NotAuthenticated => "Background sync skipped: Not authenticated.",
+                SyncStatus.PartiallyFailed => "Background sync partially failed.",
+                SyncStatus.Failed => "Background sync failed.",
+                _ => "Background sync completed with unknown status."
+            };
+            LogServerEvent(statusMsg);
 
             // Update UI
             if (this.InvokeRequired)
@@ -311,13 +323,30 @@ public partial class Form1 : Form
                 _activeProcess.IsSynced = false; // Mark as unsynced to ensure incremental sync picks it up
                 processes.UpdateProcess(_activeProcess);
             }
-            await serverSyncService.SyncAsync();
-            LogServerEvent("Manual sync completed.");
+            var status = await serverSyncService.SyncAsync();
+            
+            string statusMsg = status switch
+            {
+                SyncStatus.Success => "Manual sync completed.",
+                SyncStatus.NoUnsyncedData => "Manual sync: No data to sync.",
+                SyncStatus.NotAuthenticated => "Manual sync failed: Not authenticated.",
+                SyncStatus.PartiallyFailed => "Manual sync partially failed.",
+                SyncStatus.Failed => "Manual sync failed.",
+                _ => "Manual sync completed with unknown status."
+            };
+            LogServerEvent(statusMsg);
             
             // Update IsSynced status in cache from DB
             UpdateCacheSyncStatus();
             
-            MessageBox.Show("Синхронізація завершена", "Sync", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (status == SyncStatus.Success || status == SyncStatus.NoUnsyncedData)
+            {
+                MessageBox.Show(statusMsg, "Sync", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show(statusMsg, "Sync Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
         catch (Exception ex)
         {
@@ -355,18 +384,12 @@ public partial class Form1 : Form
             logger.LogInformation("Settings updated: ServerUrl={ServerUrl}, SyncInterval={SyncInterval}",
                 _appSettings.ServerUrl, _appSettings.SyncIntervalMinutes);
             UpdateSyncTimerInterval();
+            ApplyUISettings();
         }
     }
 
     private void exitToolStripMenuItem1_Click(object sender, EventArgs e)
     {
         exitToolStripMenuItem_Click(sender, e);
-    }
-
-    private void showLogsToolStripMenuItem_Click(object sender, EventArgs e)
-    {
-        splitContainer1.Panel2Collapsed = !showLogsToolStripMenuItem.Checked;
-        _appSettings.ShowServerLogs = showLogsToolStripMenuItem.Checked;
-        _appSettings.Save();
     }
 }
