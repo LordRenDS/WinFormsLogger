@@ -61,7 +61,7 @@ public class ServerSyncService : IServerSyncService
         return token;
     }
 
-    public async Task SyncAsync()
+    public async Task<SyncStatus> SyncAsync()
     {
         _logger.LogInformation("Starting server synchronization to {ServerUrl}...", _appSettings.ServerUrl);
 
@@ -73,7 +73,7 @@ public class ServerSyncService : IServerSyncService
             if (unsyncedProcesses.Count == 0 && unsyncedSchedules.Count == 0)
             {
                 _logger.LogInformation("No unsynced data found.");
-                return;
+                return SyncStatus.NoUnsyncedData;
             }
 
             var credentials = _credentialService.GetCredentials();
@@ -84,7 +84,7 @@ public class ServerSyncService : IServerSyncService
             if (string.IsNullOrEmpty(token))
             {
                 _logger.LogWarning("Synchronization skipped: No authentication token found. Please login.");
-                return;
+                return SyncStatus.NotAuthenticated;
             }
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -104,15 +104,18 @@ public class ServerSyncService : IServerSyncService
             if (processSyncResult && scheduleSyncResult)
             {
                 _logger.LogInformation("Synchronization completed successfully.");
+                return SyncStatus.Success;
             }
             else
             {
                 _logger.LogWarning("Synchronization partially failed. Some data might not have been synced.");
+                return SyncStatus.PartiallyFailed;
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during server synchronization");
+            return SyncStatus.Failed;
         }
     }
 
