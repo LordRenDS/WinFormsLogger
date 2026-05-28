@@ -26,6 +26,19 @@ public class ServerSyncService : IServerSyncService
         ICredentialService credentialService,
         AppSettings appSettings,
         ILogger<ServerSyncService> logger)
+        : this(processRepository, scheduleRepository, pcStatusRepository, deviceIdentityService, credentialService, appSettings, logger, new HttpClient())
+    {
+    }
+
+    internal ServerSyncService(
+        IProcessRepository processRepository,
+        IScheduleRepository scheduleRepository,
+        IPcStatusRepository pcStatusRepository,
+        IDeviceIdentityService deviceIdentityService,
+        ICredentialService credentialService,
+        AppSettings appSettings,
+        ILogger<ServerSyncService> logger,
+        HttpClient httpClient)
     {
         _processRepository = processRepository;
         _scheduleRepository = scheduleRepository;
@@ -34,7 +47,7 @@ public class ServerSyncService : IServerSyncService
         _credentialService = credentialService;
         _appSettings = appSettings;
         _logger = logger;
-        _httpClient = new HttpClient();
+        _httpClient = httpClient;
     }
 
     public async Task<string> LoginAsync(string username, string password)
