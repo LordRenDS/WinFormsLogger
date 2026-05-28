@@ -38,6 +38,9 @@ internal class ProcessTracer : IProcessTracer
             if (string.IsNullOrWhiteSpace(windowTitle))
                 throw new Exception($"The window of process {sysProcess.ProcessName} has no title (probably a system element)");
 
+            if (processId == System.Diagnostics.Process.GetCurrentProcess().Id)
+                throw new Exception("The application itself is active (tracking ignored)");
+
             int currentSessionId = System.Diagnostics.Process.GetCurrentProcess().SessionId;
             if (sysProcess.SessionId != currentSessionId)
                 throw new Exception($"Process {sysProcess.ProcessName}|{windowTitle} does not belong to the current user's session.");
