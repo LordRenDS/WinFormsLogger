@@ -273,13 +273,28 @@ public partial class Form1 : Form
         {
             if (_activeProcess != null)
             {
+                _activeProcess.IsSynced = false; // Mark as unsynced since duration changed!
                 processes.UpdateProcess(_activeProcess);
                 logger.Log(LogLevel.Information, $"Збережено тривалість процесу при виході: {_activeProcess.ProcessName} | {_activeProcess.Duration} сек.");
+            }
+
+            // Sync data with server
+            logger.LogInformation("Performing final data synchronization before exit...");
+            var syncTask = Task.Run(async () => await serverSyncService.SyncAsync());
+            
+            if (syncTask.Wait(TimeSpan.FromSeconds(5)))
+            {
+                var syncStatus = syncTask.Result;
+                logger.LogInformation("Final data synchronization completed with status: {Status}", syncStatus);
+            }
+            else
+            {
+                logger.LogWarning("Final data synchronization timed out.");
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error saving active process during form closing");
+            logger.LogError(ex, "Error during final database save or synchronization");
         }
     }
 
