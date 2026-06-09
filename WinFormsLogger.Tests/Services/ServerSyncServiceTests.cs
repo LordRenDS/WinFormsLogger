@@ -507,4 +507,178 @@ public class ServerSyncServiceTests
         // Assert
         Assert.Equal(SyncStatus.Failed, result);
     }
+
+    [Fact]
+    public async Task SyncAsync_SpecCompliance_FlowAndPayloadVerification()
+    {
+        // Arrange
+        var unsyncedProcesses = new List<Process>
+        {
+            new Process { Id = 10, ProcessName = "chrome", WindowsName = "Google", ProcessStart = new DateTime(2026, 1, 1, 12, 0, 0), Duration = 30, IsSynced = false }
+        };
+        var unsyncedSchedules = new List<Schedule>
+        {
+            new Schedule { Id = 20, PcStatusId = 5, Timestamp = new DateTime(2026, 1, 1, 12, 10, 0), IsSynced = false }
+        };
+        var pcStatuses = new List<PcStatus>
+        {
+            new PcStatus { Id = 5, Status = "Unlocked" }
+        };
+
+        _mockProcessRepo.Setup(r => r.GetAllProcesses()).Returns(unsyncedProcesses);
+        _mockScheduleRepo.Setup(r => r.GetAll()).Returns(unsyncedSchedules);
+        _mockPcStatusRepo.Setup(r => r.GetAll()).Returns(pcStatuses);
+        
+        _mockCredential.Setup(c => c.GetCredentials()).Returns(("user@example.com", "fake-jwt-token"));
+        _mockDeviceIdentity.Setup(d => d.GetDeviceId()).Returns("test-device-id");
+
+        var requestUrls = new List<string>();
+        var requestPayloads = new List<string>();
+
+        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .Callback<HttpRequestMessage, CancellationToken>((req, ct) =>
+            {
+                requestUrls.Add(req.RequestUri!.ToString());
+                if (req.Content != null)
+                {
+                    requestPayloads.Add(req.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                }
+                else
+                {
+                    requestPayloads.Add(string.Empty);
+                }
+            })
+            .ReturnsAsync((HttpRequestMessage req, CancellationToken ct) =>
+            {
+                return new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.Created,
+                    Content = new StringContent("{\"status\":\"success\"}")
+                };
+            });
+
+        var mockHttpClient = new HttpClient(handlerMock.Object);
+
+        var service = new ServerSyncService(
+            _mockProcessRepo.Object,
+            _mockScheduleRepo.Object,
+            _mockPcStatusRepo.Object,
+            _mockDeviceIdentity.Object,
+            _mockCredential.Object,
+            _appSettings,
+            _mockLogger.Object,
+            mockHttpClient
+        );
+
+        // Act
+        var result = await service.SyncAsync();
+
+        // Assert
+        Assert.Equal(SyncStatus.Success, result);
+        _mockProcessRepo.Verify(r => r.UpdateProcess(It.Is<Process>(p => p.Id == 10 && p.IsSynced)), Times.Once);
+        _mockScheduleRepo.Verify(r => r.Update(It.Is<Schedule>(s => s.Id == 20 && s.IsSynced)), Times.Once);
+
+        // Verify sequence: exactly 3 requests
+        Assert.Equal(3, requestUrls.Count);
+        
+        // 1. PC Registration
+        Assert.EndsWith("/api/v1/pcs", requestUrls[0]);
+        // 2. Processes sync
+        Assert.Contains("/api/v1/pcs/test-device-id/processes", requestUrls[1]);
+        // 3. Schedules sync
+        Assert.Contains("/api/v1/pcs/test-device-id/schedules", requestUrls[2]);
+
+        // Verify simplified log payloads (no root-level pc_unique_id or pc_name)
+        // Check processes payload (index 1)
+        using var processDoc = System.Text.Json.JsonDocument.Parse(requestPayloads[1]);
+        Assert.False(processDoc.RootElement.TryGetProperty("pc_unique_id", out _));
+        Assert.False(processDoc.RootElement.TryGetProperty("pc_name", out _));
+        Assert.True(processDoc.RootElement.TryGetProperty("data", out _));
+
+        // Check schedules payload (index 2)
+        using var scheduleDoc = System.Text.Json.JsonDocument.Parse(requestPayloads[2]);
+        Assert.False(scheduleDoc.RootElement.TryGetProperty("pc_unique_id", out _));
+        Assert.False(scheduleDoc.RootElement.TryGetProperty("pc_name", out _));
+        Assert.True(scheduleDoc.RootElement.TryGetProperty("data", out _));
+    }
+
+    [Fact]
+    public async Task SyncAsync_WhenPcRegistrationFails_AbortsSyncAndReturnsFailed()
+    {
+        // Arrange
+        var unsyncedProcesses = new List<Process>
+        {
+            new Process { Id = 10, ProcessName = "chrome", WindowsName = "Google", ProcessStart = new DateTime(2026, 1, 1, 12, 0, 0), Duration = 30, IsSynced = false }
+        };
+        var unsyncedSchedules = new List<Schedule>
+        {
+            new Schedule { Id = 20, PcStatusId = 5, Timestamp = new DateTime(2026, 1, 1, 12, 10, 0), IsSynced = false }
+        };
+        var pcStatuses = new List<PcStatus>
+        {
+            new PcStatus { Id = 5, Status = "Unlocked" }
+        };
+
+        _mockProcessRepo.Setup(r => r.GetAllProcesses()).Returns(unsyncedProcesses);
+        _mockScheduleRepo.Setup(r => r.GetAll()).Returns(unsyncedSchedules);
+        _mockPcStatusRepo.Setup(r => r.GetAll()).Returns(pcStatuses);
+        
+        _mockCredential.Setup(c => c.GetCredentials()).Returns(("user@example.com", "fake-jwt-token"));
+        _mockDeviceIdentity.Setup(d => d.GetDeviceId()).Returns("test-device-id");
+
+        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest, // failure state
+                Content = new StringContent("Invalid request")
+            });
+
+        var mockHttpClient = new HttpClient(handlerMock.Object);
+
+        var service = new ServerSyncService(
+            _mockProcessRepo.Object,
+            _mockScheduleRepo.Object,
+            _mockPcStatusRepo.Object,
+            _mockDeviceIdentity.Object,
+            _mockCredential.Object,
+            _appSettings,
+            _mockLogger.Object,
+            mockHttpClient
+        );
+
+        // Act
+        var result = await service.SyncAsync();
+
+        // Assert
+        Assert.Equal(SyncStatus.Failed, result);
+        
+        // Verify we aborted and did NOT update the local DB
+        _mockProcessRepo.Verify(r => r.UpdateProcess(It.IsAny<Process>()), Times.Never);
+        _mockScheduleRepo.Verify(r => r.Update(It.IsAny<Schedule>()), Times.Never);
+
+        // Verify only the registration endpoint was called
+        handlerMock.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(req =>
+                req.Method == HttpMethod.Post &&
+                req.RequestUri!.ToString().EndsWith("/api/v1/pcs")
+            ),
+            ItExpr.IsAny<CancellationToken>()
+        );
+    }
 }

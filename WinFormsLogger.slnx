@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="WinFormsLogger/WinFormsLogger.csproj" />
   <Project Path="WinFormsLogger.Tests/WinFormsLogger.Tests.csproj" />
+  <Project Path="WinFormsLogger/WinFormsLogger.csproj" />
 </Solution>

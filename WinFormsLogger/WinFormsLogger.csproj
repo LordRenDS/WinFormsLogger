@@ -8,6 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationHighDpiMode>SystemAware</ApplicationHighDpiMode>
     <ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
+    <Configurations>Debug;Release;Pub</Configurations>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>    
 
   <ItemGroup>
