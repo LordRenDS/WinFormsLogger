@@ -102,6 +102,13 @@ public class ServerSyncService : IServerSyncService
 
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
+            bool registrationResult = await RegisterPcAsync(deviceId, pcName);
+            if (!registrationResult)
+            {
+                _logger.LogWarning("Synchronization aborted: PC registration failed.");
+                return SyncStatus.Failed;
+            }
+
             bool processSyncResult = true;
             if (unsyncedProcesses.Count > 0)
             {
@@ -132,6 +139,32 @@ public class ServerSyncService : IServerSyncService
         }
     }
 
+    private async Task<bool> RegisterPcAsync(string deviceId, string pcName)
+    {
+        _logger.LogInformation("Ensuring PC is registered on the server: {DeviceId} ({PcName})", deviceId, pcName);
+        try
+        {
+            var payload = new { unique_id = deviceId, name = pcName };
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"{_appSettings.ServerUrl}/api/v1/pcs", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("PC registered successfully.");
+                return true;
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            _logger.LogError("PC registration failed: {StatusCode} - {Error}", response.StatusCode, error);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during PC registration");
+            return false;
+        }
+    }
+
     private async Task<bool> SyncProcessesAsync(string deviceId, string pcName, List<Process> processes)
     {
         _logger.LogInformation("Syncing {Count} processes...", processes.Count);
@@ -139,8 +172,6 @@ public class ServerSyncService : IServerSyncService
         {
             var payload = new
             {
-                pc_unique_id = deviceId,
-                pc_name = pcName,
                 data = processes.Select(p => new
                 {
                     process_start = p.ProcessStart.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -151,7 +182,7 @@ public class ServerSyncService : IServerSyncService
             };
 
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync($"{_appSettings.ServerUrl}/api/v1/sync/processes", content);
+            var response = await _httpClient.PostAsync($"{_appSettings.ServerUrl}/api/v1/pcs/{deviceId}/processes", content);
 
             if (response.IsSuccessStatusCode)
             {
@@ -186,8 +217,6 @@ public class ServerSyncService : IServerSyncService
 
             var payload = new
             {
-                pc_unique_id = deviceId,
-                pc_name = pcName,
                 data = schedules.Select(s => new
                 {
                     timestamp = s.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -196,7 +225,7 @@ public class ServerSyncService : IServerSyncService
             };
 
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync($"{_appSettings.ServerUrl}/api/v1/sync/schedules", content);
+            var response = await _httpClient.PostAsync($"{_appSettings.ServerUrl}/api/v1/pcs/{deviceId}/schedules", content);
 
             if (response.IsSuccessStatusCode)
             {

@@ -147,7 +147,18 @@ public class ServerSyncServiceTests
             Times.Once(),
             ItExpr.Is<HttpRequestMessage>(req =>
                 req.Method == HttpMethod.Post &&
-                req.RequestUri!.ToString().Contains("/api/v1/sync/processes") &&
+                req.RequestUri!.ToString().EndsWith("/api/v1/pcs") &&
+                req.Headers.Authorization!.Scheme == "Bearer" &&
+                req.Headers.Authorization!.Parameter == "fake-jwt-token"
+            ),
+            ItExpr.IsAny<CancellationToken>()
+        );
+        handlerMock.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(req =>
+                req.Method == HttpMethod.Post &&
+                req.RequestUri!.ToString().Contains("/api/v1/pcs/test-device-id/processes") &&
                 req.Headers.Authorization!.Scheme == "Bearer" &&
                 req.Headers.Authorization!.Parameter == "fake-jwt-token"
             ),
@@ -298,7 +309,18 @@ public class ServerSyncServiceTests
             Times.Once(),
             ItExpr.Is<HttpRequestMessage>(req =>
                 req.Method == HttpMethod.Post &&
-                req.RequestUri!.ToString().Contains("/api/v1/sync/schedules") &&
+                req.RequestUri!.ToString().EndsWith("/api/v1/pcs") &&
+                req.Headers.Authorization!.Scheme == "Bearer" &&
+                req.Headers.Authorization!.Parameter == "fake-jwt-token"
+            ),
+            ItExpr.IsAny<CancellationToken>()
+        );
+        handlerMock.Protected().Verify(
+            "SendAsync",
+            Times.Once(),
+            ItExpr.Is<HttpRequestMessage>(req =>
+                req.Method == HttpMethod.Post &&
+                req.RequestUri!.ToString().Contains("/api/v1/pcs/test-device-id/schedules") &&
                 req.Headers.Authorization!.Scheme == "Bearer" &&
                 req.Headers.Authorization!.Parameter == "fake-jwt-token"
             ),
@@ -367,7 +389,7 @@ public class ServerSyncServiceTests
         _mockScheduleRepo.Verify(r => r.Update(It.Is<Schedule>(s => s.Id == 20 && s.IsSynced)), Times.Once);
         handlerMock.Protected().Verify(
             "SendAsync",
-            Times.Exactly(2), // 1 for processes, 1 for schedules
+            Times.Exactly(3), // 1 for registration, 1 for processes, 1 for schedules
             ItExpr.IsAny<HttpRequestMessage>(),
             ItExpr.IsAny<CancellationToken>()
         );
@@ -399,12 +421,26 @@ public class ServerSyncServiceTests
 
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         
+        // Setup registration to succeed
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req => req.RequestUri!.ToString().EndsWith("/api/v1/pcs")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"status\":\"success\"}")
+            });
+
         // Setup processes sync to fail with InternalServerError (500)
         handlerMock
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.RequestUri!.ToString().Contains("/api/v1/sync/processes")),
+                ItExpr.Is<HttpRequestMessage>(req => req.RequestUri!.ToString().Contains("/api/v1/pcs/test-device-id/processes")),
                 ItExpr.IsAny<CancellationToken>()
             )
             .ReturnsAsync(new HttpResponseMessage
@@ -418,7 +454,7 @@ public class ServerSyncServiceTests
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(req => req.RequestUri!.ToString().Contains("/api/v1/sync/schedules")),
+                ItExpr.Is<HttpRequestMessage>(req => req.RequestUri!.ToString().Contains("/api/v1/pcs/test-device-id/schedules")),
                 ItExpr.IsAny<CancellationToken>()
             )
             .ReturnsAsync(new HttpResponseMessage
