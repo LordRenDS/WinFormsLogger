@@ -2,7 +2,7 @@
 bin/
 obj/
 docs/
-GEMINI.md
+AGENTS.md
 .agents/
 .antigravitycli/
 .github/
