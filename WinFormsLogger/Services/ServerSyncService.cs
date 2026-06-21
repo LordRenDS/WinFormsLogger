@@ -170,15 +170,25 @@ public class ServerSyncService : IServerSyncService
         _logger.LogInformation("Syncing {Count} processes...", processes.Count);
         try
         {
+            var groupedProcesses = processes
+                .GroupBy(p => new
+                {
+                    Start = p.ProcessStart.ToString("yyyy-MM-dd HH:mm:ss"),
+                    Name = p.ProcessName,
+                    Window = p.WindowsName
+                })
+                .Select(g => new
+                {
+                    process_start = g.Key.Start,
+                    process_name = g.Key.Name,
+                    window_name = g.Key.Window,
+                    duration = g.Sum(p => p.Duration)
+                })
+                .ToList();
+
             var payload = new
             {
-                data = processes.Select(p => new
-                {
-                    process_start = p.ProcessStart.ToString("yyyy-MM-dd HH:mm:ss"),
-                    process_name = p.ProcessName,
-                    window_name = p.WindowsName,
-                    duration = p.Duration
-                })
+                data = groupedProcesses
             };
 
             var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");

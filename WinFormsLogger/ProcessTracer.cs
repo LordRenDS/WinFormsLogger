@@ -68,7 +68,7 @@ internal class ProcessTracer : IProcessTracer
         const int nChars = 256;
         var buff = new System.Text.StringBuilder(nChars);
         GetWindowText(hWnd, buff, nChars);
-        return buff.ToString();
+        return buff.ToString().Trim();
     }
 
     private string GetWindowClassName(IntPtr hWnd)
